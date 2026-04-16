@@ -1,0 +1,26 @@
+{
+  "name": "safecity-alert-platform",
+  "version": "1.0.0",
+  "description": "Sistema de alertas de riesgo urbano - Proyecto de Aula",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anaborja0315-del/safecity-alert-platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/anaborja0315-del/safecity-alert-platform/issues"
+  },
+  "homepage": "https://github.com/anaborja0315-del/safecity-alert-platform#readme",
+  "dependencies": {
+    "dotenv": "^17.4.1",
+    "express": "^5.2.1",
+    "pg": "^8.20.0"
+  }
+}
