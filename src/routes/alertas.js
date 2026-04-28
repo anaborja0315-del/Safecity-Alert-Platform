@@ -1,6 +1,7 @@
 const express = require('express');
-const router = express.Router();
-const pool = require('../db/connection');
+const router = express.Router();// crea un mini servidor para manejar las rutas de alertas
+const pool = require('../db/connection'); // conexión a la base de datos
+const verificarToken = require('../middleware/autenticacion');
 
 // GET /api/alertas - obtener todas las alertas
 router.get('/', async (req, res) => {
@@ -31,7 +32,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/alertas - crear una alerta nueva
-router.post('/', async (req, res) => {
+router.post('/', verificarToken, async (req, res) => {
   const { titulo, descripcion, tipo, latitud, longitud, usuario_id, categoria_id } = req.body;
   try {
     const result = await pool.query(
