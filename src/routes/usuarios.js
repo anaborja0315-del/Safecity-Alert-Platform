@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../db/connection');
 
+const verificarToken = require('../middleware/autenticacion');
+
 // POST /api/usuarios/register - registrar un usuario nuevo
 router.post('/register', async (req, res) => {
   const { nombre, email, password } = req.body;
@@ -78,6 +80,42 @@ router.post('/login', async (req, res) => {
         rol: usuario.rol
       }
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/usuarios/:id - obtener un usuario por id
+router.get('/:id', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, nombre, email, rol FROM usuarios WHERE id = $1',
+      [req.params.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/usuarios/me - obtener los datos del usuario autenticado
+router.get('/perfil/me', verificarToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, nombre, email, rol FROM usuarios WHERE id = $1',
+      [req.usuario.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

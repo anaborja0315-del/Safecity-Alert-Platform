@@ -33,12 +33,14 @@ router.get('/:id', async (req, res) => {
 
 // POST /api/alertas - crear una alerta nueva
 router.post('/', verificarToken, async (req, res) => {
-  const { titulo, descripcion, tipo, latitud, longitud, usuario_id, categoria_id } = req.body;
+  const { titulo, descripcion, tipo, latitud, longitud, categoria_id } = req.body;
+  const usuario_id = req.usuario.id;  // Obtener del token JWT
+
   try {
     const result = await pool.query(
       `INSERT INTO alertas (titulo, descripcion, tipo, latitud, longitud, usuario_id, categoria_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, titulo, descripcion, tipo, estado, latitud, longitud`,
+       RETURNING id, titulo, descripcion, tipo, estado, latitud, longitud, usuario_id`,
       [titulo, descripcion, tipo, latitud, longitud, usuario_id, categoria_id]
     );
     res.status(201).json(result.rows[0]);
