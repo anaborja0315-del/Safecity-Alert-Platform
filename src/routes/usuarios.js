@@ -3,8 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../db/connection');
-
-const verificarToken = require('../middleware/autenticacion');
+const { verificarToken, verificarAdmin } = require('../middleware/autenticacion');
 
 // POST /api/usuarios/register - registrar un usuario nuevo
 router.post('/register', async (req, res) => {
