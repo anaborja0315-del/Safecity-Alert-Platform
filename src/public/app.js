@@ -53,6 +53,38 @@ async function loadAlerts() {
       markers.push(marker);
     });
 
+    // Agregar event listeners a los botones DELETE (usando delegación)
+    setTimeout(() => {
+      document.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('delete-btn')) {
+          e.preventDefault();
+          e.stopPropagation();
+          const alertId = e.target.dataset.alertId;
+          
+          if (confirm('Are you sure you want to delete this alert?')) {
+            try {
+              const response = await fetch(`${API_URL}/alertas/${alertId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              });
+
+              if (response.ok) {
+                showNotification('Alert deleted successfully');
+                loadAlerts();
+              } else {
+                const data = await response.json();
+                showNotification(data.error || 'Failed to delete', 'error');
+              }
+            } catch (error) {
+              showNotification('Connection error', 'error');
+            }
+          }
+        }
+      });
+    }, 100);
+
     // Actualizar contador de estadísticas
     document.getElementById('totalAlerts').textContent = alerts.length;
   } catch (error) {
@@ -62,14 +94,30 @@ async function loadAlerts() {
 }
 
 // ===== CREAR CONTENIDO DEL POPUP =====
+// Crear contenido del popup con botón DELETE si es admin o dueño
 function createPopupContent(alert) {
+  const esAdmin = currentUser?.rol === 'admin';
+  const esDueño = currentUser?.id === alert.usuario_id;
+  const puedeEliminar = (esAdmin || esDueño) && token;
+
+  let deleteButton = '';
+  if (puedeEliminar) {
+    deleteButton = `
+      <button class="delete-btn" data-alert-id="${alert.id}" 
+              style="background: #E74C3C; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; margin-top: 8px; font-weight: 600; font-size: 0.9rem;">
+        🗑️ Delete Alert
+      </button>
+    `;
+  }
+
   return `
     <h3>${alert.titulo}</h3>
     <p>${alert.descripcion || 'No description'}</p>
     <span class="popup-tag">${alert.tipo}</span>
-    <p style="margin-top: 8px; font-size: 0.8rem; color: gray;">
+    <p style="margin-top: 8px; font-size: 0.8rem; color: #7F8C8D;">
       Status: ${alert.estado || 'active'}
     </p>
+    ${deleteButton}
   `;
 }
 
@@ -145,8 +193,11 @@ function updateUIAfterLogin() {
   document.getElementById('registerBtn').style.display = 'none';
   document.getElementById('logoutBtn').style.display = 'inline-block';
   document.getElementById('userInfo').style.display = 'inline-block';
-  document.getElementById('userName').textContent = 
-    currentUser?.nombre || currentUser?.email || 'User';
+  
+  const userName = currentUser?.nombre || currentUser?.email || 'User';
+  const adminBadge = currentUser?.rol === 'admin' ? ' 👨‍💼' : '';
+  
+  document.getElementById('userName').textContent = userName + adminBadge;
 }
 
 // Mostrar elementos cuando no hay sesión
