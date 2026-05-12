@@ -15,6 +15,76 @@ router.get('/', async (req, res) => {
   }
 });
 
+// ===== FILTRAR ALERTAS POR TIPO Y ZONA =====
+// GET /api/alertas/filtro?tipo=hueco&radio=5&lat=10.4236&lng=-75.5378
+router.get('/filtro', async (req, res) => {
+  try {
+    // Recibir parámetros de la URL
+    const { tipo, radio, lat, lng } = req.query;
+
+    // Validar que todos los parámetros estén presentes
+    if (!tipo || !radio || !lat || !lng) {
+      return res.status(400).json({ 
+        error: 'Missing parameters: tipo, radio, lat, lng required' 
+      });
+    }
+
+    // Convertir a números (seguridad)
+    const radioNum = parseFloat(radio);
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lng);
+
+    // Validar que sean números válidos
+    if (isNaN(radioNum) || isNaN(latNum) || isNaN(lngNum)) {
+      return res.status(400).json({ 
+        error: 'Invalid number format for radio, lat, or lng' 
+      });
+    }
+
+    // Consulta SQL con PostGIS
+    // ST_DWithin compara distancias geográficas
+    // ST_MakePoint crea un vector (longitud, latitud)
+    // radio * 1000 convierte km a metros
+    const query = `
+      SELECT 
+        a.id,
+        a.titulo,
+        a.descripcion,
+        a.tipo,
+        a.estado,
+        a.latitud,
+        a.longitud,
+        a.fecha_creacion,
+        u.nombre as usuario_nombre,
+        c.nombre as categoria_nombre
+      FROM alertas a
+      LEFT JOIN usuarios u ON a.usuario_id = u.id
+      LEFT JOIN categorias c ON a.categoria_id = c.id
+      WHERE a.tipo = $1
+      AND ST_DWithin(
+        ST_MakePoint(a.longitud, a.latitud)::geography,
+        ST_MakePoint($3, $2)::geography,
+        $4 * 1000
+      )
+      ORDER BY a.fecha_creacion DESC
+    `;
+
+    // Ejecutar consulta
+    // $1 = tipo
+    // $2 = latitud
+    // $3 = longitud
+    // $4 = radio (en km)
+    const result = await pool.query(query, [tipo, latNum, lngNum, radioNum]);
+
+    // Devolver alertas filtradas
+    res.json(result.rows);
+
+  } catch (error) {
+    console.error('Error filtering alerts:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // GET /api/alertas/:id - obtener una alerta por id
 router.get('/:id', async (req, res) => {
   try {
@@ -61,42 +131,6 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Alerta no encontrada' });
     }
     res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// DELETE - Eliminar alerta
-// Solo el dueño PUEDE eliminarla
-// O un ADMIN puede eliminar cualquiera
-router.delete('/:id', verificarToken, async (req, res) => {
-  const { id } = req.params;
-  const usuarioID = req.usuario.id;
-  const usuarioROL = req.usuario.rol;
-
-  try {
-    // Obtener la alerta para verificar quién la creó
-    const result = await pool.query(
-      'SELECT usuario_id FROM alertas WHERE id = $1',
-      [id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Alert not found' });
-    }
-
-    const alertaUsuarioID = result.rows[0].usuario_id;
-
-    // Verificar: ¿eres el dueño o eres admin?
-    if (usuarioID !== alertaUsuarioID && usuarioROL !== 'admin') {
-      return res.status(403).json({ 
-        error: 'You can only delete your own alerts. Admins can delete any alert.' 
-      });
-    }
-
-    // Eliminar la alerta
-    await pool.query('DELETE FROM alertas WHERE id = $1', [id]);
-    res.json({ mensaje: 'Alert deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
