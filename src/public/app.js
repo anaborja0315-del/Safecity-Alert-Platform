@@ -329,4 +329,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Formulario para crear alerta
   document.getElementById('alertForm').addEventListener('submit', submitAlert);
+  
+  // ===== FILTRAR ALERTAS =====
+document.getElementById('applyFiltersBtn').addEventListener('click', async () => {
+  // Obtener valores del formulario de filtros
+  const tipo = document.getElementById('filterType').value;
+  const radio = document.getElementById('filterRadius').value;
+
+  // Validar que haya seleccionado tipo
+  if (!tipo) {
+    showNotification('Please select an alert type', 'error');
+    return;
+  }
+
+  // Obtener ubicación actual del usuario (de la última ubicación guardada)
+  const currentLocation = map.getCenter();
+  const lat = currentLocation.lat;
+  const lng = currentLocation.lng;
+
+  try {
+    // Llamar al endpoint de filtros de Mariana
+    const url = `${API_URL}/alertas/filtro?tipo=${tipo}&radio=${radio}&lat=${lat}&lng=${lng}`;
+    const response = await fetch(url);
+    const filteredAlerts = await response.json();
+
+    // Limpiar marcadores anteriores
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+
+    // Agregar marcadores filtrados
+    filteredAlerts.forEach(alert => {
+      const marker = L.marker([alert.latitud, alert.longitud])
+        .bindPopup(createPopupContent(alert))
+        .addTo(map);
+      markers.push(marker);
+    });
+
+    showNotification(`Found ${filteredAlerts.length} alerts matching your filters`);
+  } catch (error) {
+    console.error('Error filtering alerts:', error);
+    showNotification('Error filtering alerts', 'error');
+  }
+});
+
+// ===== LIMPIAR FILTROS =====
+document.getElementById('clearFiltersBtn').addEventListener('click', async () => {
+  // Limpiar valores del formulario
+  document.getElementById('filterType').value = '';
+  document.getElementById('filterRadius').value = '5';
+
+  // Recargar todas las alertas
+  loadAlerts();
+
+  showNotification('Filters cleared - showing all alerts');
+});
 });
