@@ -372,7 +372,7 @@ document.getElementById('applyFiltersBtn').addEventListener('click', async () =>
   }
 });
 
-// ===== LIMPIAR FILTROS =====
+// ===== LIMPIIAR FILTROS =====
 document.getElementById('clearFiltersBtn').addEventListener('click', async () => {
   // Limpiar valores del formulario
   document.getElementById('filterType').value = '';
@@ -383,4 +383,21 @@ document.getElementById('clearFiltersBtn').addEventListener('click', async () =>
 
   showNotification('Filters cleared - showing all alerts');
 });
+// ===== CARGAR ESTADÍSTICAS =====
+async function loadStats() {
+  try {
+    const response = await fetch(`${API_URL}/alertas/stats`);
+    const stats = await response.json();
+
+    document.getElementById('totalAlerts').textContent = stats.totalAlertas || 0;
+    document.getElementById('activeAlerts').textContent = stats.alertasActivas || 0;
+    document.getElementById('resolvedAlerts').textContent = stats.alertasResueltas || 0;
+
+  } catch (error) {
+    console.error('Error loading stats:', error);
+  }
+}
+
+// Cargar estadísticas al iniciar
+loadStats();
 });
