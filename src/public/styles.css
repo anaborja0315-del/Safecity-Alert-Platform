@@ -296,3 +296,129 @@ body {
   font-size: 0.75rem;
   margin-top: 0.3rem;
 }
+
+/* ===== SIDEBAR TOGGLE ===== */
+.toggle-btn {
+  position: fixed;
+  left: 15px;
+  top: 100px;
+  background: #1F3864;
+  color: white;
+  border: none;
+  padding: 12px 15px;
+  font-size: 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 999;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn:hover {
+  background: #27AE60;
+  transform: scale(1.1);
+}
+
+/* Sidebar - Estado CERRADO */
+.sidebar.closed {
+  transform: translateX(-100%);
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+/* Sidebar - Estado ABIERTO */
+.sidebar:not(.closed) {
+  transform: translateX(0);
+  visibility: visible;
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+/* Ajustar ancho del sidebar */
+.sidebar {
+  width: 320px;
+}
+/* ===== SIDEBAR SECTIONS ===== */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #ddd;
+}
+
+.nav-btn {
+  background: #f0f0f0;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.nav-btn:hover {
+  background: #e0e0e0;
+  transform: translateX(4px);
+}
+
+.nav-btn.active {
+  background: #27AE60;
+  color: white;
+}
+
+.sidebar-section {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.sidebar-section.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.alert-item {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #27AE60;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.alert-item:hover {
+  background: #e8f5e9;
+  transform: translateX(4px);
+}
+
+.alert-item-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.alert-item-status {
+  font-size: 12px;
+  color: #7F8C8D;
+  margin-top: 4px;
+}

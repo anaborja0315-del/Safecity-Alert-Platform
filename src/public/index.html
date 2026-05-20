@@ -27,52 +27,105 @@
         </span>
         <button id="loginBtn" class="btn btn-primary">Login</button>
         <button id="registerBtn" class="btn btn-secondary">Register</button>
-        <button id="logoutBtn" class="btn btn-danger" style="display: none">
-          Logout
+        <button id="logoutBtnHeader" class="btn btn-danger" style="display: none;">Logout</button>
         </button>
       </nav>
     </header>
 
     <!-- Main content -->
     <main class="main">
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <h2>Report Alert</h2>
-        <p class="info-text">Click on the map to set location</p>
 
-        <form id="alertForm" class="alert-form">
-          <input type="text" id="title" placeholder="Alert title" required />
-          <textarea
-            id="description"
-            placeholder="Describe the issue..."
-            rows="3"
-            required
-          ></textarea>
+      <!-- Toggle Button for Sidebar -->
+<button id="toggleSidebar" class="toggle-btn" title="Open/Close Menu">
+  ☰
+</button>
+      <!-- SIDEBAR COLAPSABLE -->
+<aside id="sidebar" class="sidebar closed">
+  
+  <!-- BOTONES DE NAVEGACIÓN -->
+  <div class="sidebar-nav">
+    <button class="nav-btn active" data-section="new-alert">
+      ➕ New Alert
+    </button>
+    <button class="nav-btn" data-section="view-alerts">
+      📋 My Alerts
+    
+    <button class="nav-btn" data-section="account">
+      👤 Account
+    </button>
+    <button class="nav-btn" data-section="statistics">
+  📊 Statistics
+</button>
+  </div>
 
-          <select id="categoryId" required>
-            <option value="">Select risk type</option>
-            <option value="1">🕳️ Pothole</option>
-            <option value="2">🌊 Flooding</option>
-            <option value="3">⚡ Electric Risk</option>
-            <option value="4">🚨 Insecurity</option>
-            <option value="5">🚗 Accident</option>
-          </select>
+  <!-- SECCIÓN 1: NEW ALERT -->
+  <section id="new-alert" class="sidebar-section active">
+    <h2>Report Alert</h2>
+    <p class="info-text">Click on the map to set location</p>
 
-          <input
-            type="text"
-            id="coords"
-            placeholder="Coordinates (click on map)"
-            readonly
-          />
+    <form id="alertForm" class="alert-form">
+      <input type="text" id="title" placeholder="Alert title" required />
+      <textarea
+        id="description"
+        placeholder="Describe the issue..."
+        rows="3"
+        required
+      ></textarea>
 
-          <button type="submit" class="btn btn-success">Submit Alert</button>
-        </form>
+      <select id="categoryId" required>
+        <option value="">Select risk type</option>
+        <option value="1">🕳️ Pothole</option>
+        <option value="2">🌊 Flooding</option>
+        <option value="3">⚡ Electric Risk</option>
+        <option value="4">🚨 Insecurity</option>
+        <option value="5">🚗 Accident</option>
+      </select>
 
-        <div class="stats">
-          <h3>Statistics</h3>
-          <p>Total alerts: <strong id="totalAlerts">0</strong></p>
-        </div>
-      </aside>
+      <input
+        type="text"
+        id="coords"
+        placeholder="Coordinates (click on map)"
+        readonly
+      />
+
+      <button type="submit" class="btn btn-success">Submit Alert</button>
+    </form>
+  </section>
+
+  <!-- SECCIÓN 2: VIEW ALERTS -->
+  <section id="view-alerts" class="sidebar-section">
+    <h2>My Alerts</h2>
+    <div id="userAlertsList" class="alerts-list">
+      <p style="text-align: center; color: #7F8C8D;">No alerts yet</p>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 3: STATISTICS -->
+  <section id="statistics" class="sidebar-section">
+    <h2>📊 Statistics</h2>
+    <div class="stats">
+      <p>Total Alerts: <strong id="totalAlerts">0</strong></p>
+      <p>Active: <strong id="activeAlerts">0</strong></p>
+      <p>Resolved: <strong id="resolvedAlerts">0</strong></p>
+    </div>
+  </section>
+
+ 
+
+  <!-- SECCIÓN 4: ACCOUNT -->
+<section id="account" class="sidebar-section">
+  <h2>👤 Account</h2>
+  <div id="accountInfo" style="padding: 16px; background: #f8f9fa; border-radius: 6px;">
+    <p><strong>Email:</strong> <span id="userEmail">-</span></p>
+    <p><strong>Name:</strong> <span id="userName">-</span></p>
+    <p><strong>Role:</strong> <span id="userRole">-</span></p>
+    <button id="logoutBtn" style="background: #E74C3C; color: white; padding: 10px 16px; border: none; border-radius: 4px; cursor: pointer; margin-top: 16px; width: 100%; font-weight: 600;">
+      🚪 Logout
+    </button>
+  </div>
+</section>
+
+</aside>
 
       <!-- Map -->
       <div id="map" class="map"></div>

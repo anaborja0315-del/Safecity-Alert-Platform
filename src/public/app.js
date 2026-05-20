@@ -330,3 +330,94 @@ document.addEventListener('DOMContentLoaded', () => {
   // Formulario para crear alerta
   document.getElementById('alertForm').addEventListener('submit', submitAlert);
 });
+// ===== CARGAR ESTADÍSTICAS =====
+async function loadStats() {
+  try {
+    const response = await fetch(`${API_URL}/estadisticas`);
+    const stats = await response.json();
+
+    // Actualizar HTML con los números
+    document.getElementById('totalAlerts').textContent = stats.totalAlertas || 0;
+    document.getElementById('activeAlerts').textContent = stats.alertasActivas || 0;
+    document.getElementById('resolvedAlerts').textContent = stats.alertasResueltas || 0;
+
+  } catch (error) {
+    console.error('Error loading stats:', error);
+  }
+}
+
+// Cargar estadísticas al iniciar
+loadStats();
+
+// ===== TOGGLE SIDEBAR =====
+document.getElementById('toggleSidebar').addEventListener('click', () => {
+  const sidebar = document.getElementById('sidebar');
+  sidebar.classList.toggle('closed');
+});
+
+// Cerrar sidebar al hacer clic en "Submit Alert"
+document.getElementById('alertForm').addEventListener('submit', () => {
+  document.getElementById('sidebar').classList.add('closed');
+});
+
+// ===== NAVEGACIÓN DE SECCIONES =====
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const sectionId = btn.dataset.section;
+    
+    // Remover clase active de todos los botones
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    // Remover clase active de todas las secciones
+    document.querySelectorAll('.sidebar-section').forEach(section => {
+      section.classList.remove('active');
+    });
+    
+    // Activar la sección seleccionada
+    document.getElementById(sectionId).classList.add('active');
+  });
+});
+
+// ===== CARGAR ALERTAS DEL USUARIO =====
+async function loadUserAlerts() {
+  try {
+    const response = await fetch(`${API_URL}/alertas`);
+    const alerts = await response.json();
+    
+    // Filtrar solo alertas del usuario actual
+    const userAlerts = alerts.filter(a => a.usuario_id === currentUser?.id);
+    
+    const alertsList = document.getElementById('userAlertsList');
+    
+    if (userAlerts.length === 0) {
+      alertsList.innerHTML = '<p style="text-align: center; color: #7F8C8D;">No alerts yet</p>';
+      return;
+    }
+    
+    alertsList.innerHTML = userAlerts.map(alert => `
+      <div class="alert-item">
+        <div class="alert-item-title">${alert.titulo}</div>
+        <div class="alert-item-status">
+          Status: ${alert.estado || 'active'} | Type: ${alert.tipo}
+        </div>
+      </div>
+    `).join('');
+    
+  } catch (error) {
+    console.error('Error loading user alerts:', error);
+  }
+}
+
+// ===== CARGAR INFO DE CUENTA =====
+function loadAccountInfo() {
+  if (currentUser) {
+    document.getElementById('userEmail').textContent = currentUser.email || '-';
+    document.getElementById('userName').textContent = currentUser.nombre || '-';
+    document.getElementById('userRole').textContent = currentUser.rol || 'user';
+  }
+}
+
+// Cargar datos cuando se abre la sección
+document.querySelector('[data-section="view-alerts"]').addEventListener('click', loadUserAlerts);
+document.querySelector('[data-section="account"]').addEventListener('click', loadAccountInfo);
