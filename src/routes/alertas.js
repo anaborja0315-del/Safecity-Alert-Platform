@@ -84,6 +84,47 @@ router.get('/filtro', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+// ===== OBTENER ESTADÍSTICAS =====
+router.get('/stats', async (req, res) => {
+  try {
+    // Total de alertas
+    const totalResult = await pool.query('SELECT COUNT(*) as total FROM alertas');
+    const totalAlertas = parseInt(totalResult.rows[0].total);
+
+    // Alertas activas
+    const activasResult = await pool.query("SELECT COUNT(*) as activas FROM alertas WHERE estado = 'activa'");
+    const alertasActivas = parseInt(activasResult.rows[0].activas);
+
+    // Alertas resueltas
+    const resueltasResult = await pool.query("SELECT COUNT(*) as resueltas FROM alertas WHERE estado = 'resuelta'");
+    const alertasResueltas = parseInt(resueltasResult.rows[0].resueltas);
+
+    // Alertas por tipo
+    const porTipoResult = await pool.query(`
+      SELECT tipo, COUNT(*) as cantidad
+      FROM alertas
+      GROUP BY tipo
+      ORDER BY cantidad DESC
+    `);
+
+    const alertasPorTipo = {};
+    porTipoResult.rows.forEach(row => {
+      alertasPorTipo[row.tipo] = parseInt(row.cantidad);
+    });
+
+    // Devolver estadísticas
+    res.json({
+      totalAlertas,
+      alertasActivas,
+      alertasResueltas,
+      alertasPorTipo
+    });
+
+  } catch (error) {
+    console.error('Error getting stats:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 // GET /api/alertas/:id - obtener una alerta por id
 router.get('/:id', async (req, res) => {
@@ -135,6 +176,7 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 // ===== OBTENER ESTADÍSTICAS =====
 router.get('/stats', async (req, res) => {
   try {

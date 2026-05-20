@@ -329,14 +329,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Formulario para crear alerta
   document.getElementById('alertForm').addEventListener('submit', submitAlert);
+
 });
 // ===== CARGAR ESTADÍSTICAS =====
 async function loadStats() {
   try {
-    const response = await fetch(`${API_URL}/estadisticas`);
+
+    const response = await fetch(`${API_URL}/alertas/stats`);
     const stats = await response.json();
 
-    // Actualizar HTML con los números
     document.getElementById('totalAlerts').textContent = stats.totalAlertas || 0;
     document.getElementById('activeAlerts').textContent = stats.alertasActivas || 0;
     document.getElementById('resolvedAlerts').textContent = stats.alertasResueltas || 0;
