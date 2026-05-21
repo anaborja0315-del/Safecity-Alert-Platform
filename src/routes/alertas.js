@@ -160,22 +160,33 @@ router.post('/', verificarToken, async (req, res) => {
   }
 });
 
-// PUT /api/alertas/:id - actualizar estado de una alerta
+// PUT /api/alertas/:id - Cambiar estado
 router.put('/:id', async (req, res) => {
   const { estado } = req.body;
+  const { id } = req.params;
+  
   try {
+    // Validar que sea "activa" o "resuelta"
+    if (!['activa', 'resuelta'].includes(estado)) {
+      return res.status(400).json({ error: 'Estado inválido' });
+    }
+    
+    // Actualizar en BD
     const result = await pool.query(
-      'UPDATE alertas SET estado = $1 WHERE id = $2 RETURNING id, titulo, estado',
-      [estado, req.params.id]
+      'UPDATE alertas SET estado = $1 WHERE id = $2 RETURNING *',
+      [estado, id]
     );
+    
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Alerta no encontrada' });
     }
-    res.json(result.rows[0]);
+    
+    res.json(result.rows[0]); // Devuelve alerta actualizada
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ===== OBTENER ESTADÍSTICAS =====
 router.get('/stats', async (req, res) => {
