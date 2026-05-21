@@ -74,7 +74,7 @@ async function loadAlerts() {
                 showNotification('Alert deleted successfully');
                 loadAlerts();
               } else {
-                const data = await response.json();
+                const data = await response.json(); 
                 showNotification(data.error || 'Failed to delete', 'error');
               }
             } catch (error) {
@@ -84,6 +84,41 @@ async function loadAlerts() {
         }
       });
     }, 100);
+
+    // ===== EVENT LISTENER PARA CAMBIAR ESTADO =====
+setTimeout(() => {
+  document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('status-btn')) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const alertId = e.target.dataset.alertId;
+      const selectId = `status-select-${alertId}`;
+      const newStatus = document.getElementById(selectId).value;
+      
+      try {
+        const response = await fetch(`${API_URL}/alertas/${alertId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ estado: newStatus })
+        });
+
+        if (response.ok) {
+          showNotification('Status updated successfully!');
+          loadAlerts(); // Recargar para ver el cambio
+        } else {
+          const data = await response.json();
+          showNotification(data.error || 'Failed to update status', 'error');
+        }
+      } catch (error) {
+        showNotification('Connection error', 'error');
+      }
+    }
+  });
+}, 100);
 
     // Actualizar contador de estadísticas
     document.getElementById('totalAlerts').textContent = alerts.length;
@@ -110,13 +145,33 @@ function createPopupContent(alert) {
     `;
   }
 
+  // ===== SELECTOR DE ESTADO - SOLO PARA ADMIN =====
+  let statusSection = '';
+  if (token && esAdmin) {  // ← AQUÍ: SOLO SI ES ADMIN
+    statusSection = `
+      <div style="margin-top: 12px; border-top: 1px solid #ddd; padding-top: 8px;">
+        <label style="font-weight: 600; font-size: 0.9rem;">Change Status (Admin only):</label>
+        <select id="status-select-${alert.id}" 
+                style="width: 100%; padding: 6px; margin: 6px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem;">
+          <option value="activa" ${alert.estado === 'activa' ? 'selected' : ''}>Activa</option>
+          <option value="resuelta" ${alert.estado === 'resuelta' ? 'selected' : ''}>Resuelta</option>
+        </select>
+        <button class="status-btn" data-alert-id="${alert.id}"
+                style="width: 100%; background: #27AE60; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
+          💾 Save Status
+        </button>
+      </div>
+    `;
+  }
+
   return `
     <h3>${alert.titulo}</h3>
     <p>${alert.descripcion || 'No description'}</p>
     <span class="popup-tag">${alert.tipo}</span>
     <p style="margin-top: 8px; font-size: 0.8rem; color: #7F8C8D;">
-      Status: ${alert.estado || 'active'}
+      Status: <strong>${alert.estado || 'active'}</strong>
     </p>
+    ${statusSection}
     ${deleteButton}
   `;
 }
@@ -292,6 +347,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // Inicializar el mapa y cargar alertas
   initMap();
   loadAlerts();
+  // ===== GEOLOCALIZACIÓN =====
+document.getElementById('myLocationBtn').addEventListener('click', () => {
+  // Pedir ubicación del navegador
+  navigator.geolocation.getCurrentPosition((position) => {
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+    
+    // Llenar el campo de coordenadas
+    document.getElementById('coords').value = `${lat}, ${lng}`;
+    
+    // Opcional: mover el mapa a esa ubicación
+    map.setView([lat, lng], 15);
+    
+    // Mostrar notificación
+    showNotification('Location obtained!');
+  }, (error) => {
+    showNotification('Could not get location. Allow location access.', 'error');
+  });
+});
 
   // Restaurar sesión si ya había un token guardado
   if (token && currentUser) {

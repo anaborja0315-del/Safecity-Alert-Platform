@@ -229,7 +229,6 @@ router.get('/stats', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-
 // DELETE /api/alertas/:id - Eliminar una alerta
 router.delete('/:id', verificarToken, async (req, res) => {
   const { id } = req.params;

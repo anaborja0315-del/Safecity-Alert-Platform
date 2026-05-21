@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 // Middleware que verifica si el usuario está autenticado
-const verificarToken = (req, res, next) => {
+const verificarToken = (req, res, next) => { 
   try {
     // Obtener el token del header Authorization
     const token = req.headers.authorization?.split(' ')[1];
@@ -24,7 +24,7 @@ const verificarToken = (req, res, next) => {
 };
 
 // Middleware para verificar si el usuario es ADMIN
-const verificarAdmin = (req, res, next) => {
+const verificarAdmin = (req, res, next) => { 
   const token = req.headers.authorization?.split(' ')[1];
   
   if (!token) {
