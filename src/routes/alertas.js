@@ -218,4 +218,33 @@ router.get('/stats', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+// DELETE /api/alertas/:id - Eliminar una alerta
+router.delete('/:id', verificarToken, async (req, res) => {
+  const { id } = req.params;
+  const usuario_id = req.usuario.id;
+  
+  try {
+    // Verificar que sea el dueño o admin
+    const alertaResult = await pool.query(
+      'SELECT usuario_id FROM alertas WHERE id = $1',
+      [id]
+    );
+    
+    if (alertaResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Alerta no encontrada' });
+    }
+    
+    // Solo el dueño o admin puede eliminar
+    if (alertaResult.rows[0].usuario_id !== usuario_id && req.usuario.rol !== 'admin') {
+      return res.status(403).json({ error: 'No tienes permiso' });
+    }
+    
+    // Eliminar
+    await pool.query('DELETE FROM alertas WHERE id = $1', [id]);
+    
+    res.json({ message: 'Alerta eliminada' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 module.exports = router;
