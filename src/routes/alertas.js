@@ -7,7 +7,7 @@ const { verificarToken, verificarAdmin } = require('../middleware/autenticacion'
 router.get('/', async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, titulo, descripcion, tipo, estado, latitud, longitud, fecha_creacion FROM alertas ORDER BY fecha_creacion DESC'
+      'SELECT id, titulo, descripcion, tipo, estado, latitud, longitud, usuario_id, fecha_creacion FROM alertas ORDER BY fecha_creacion DESC'
     );
     res.json(result.rows);
   } catch (err) {
