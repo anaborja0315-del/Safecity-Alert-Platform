@@ -147,7 +147,7 @@ function createPopupContent(alert) {
 
   // ===== SELECTOR DE ESTADO - SOLO PARA ADMIN =====
   let statusSection = '';
-  if (token && esAdmin) {  // ← AQUÍ: SOLO SI ES ADMIN
+  if (token && esAdmin) {
     statusSection = `
       <div style="margin-top: 12px; border-top: 1px solid #ddd; padding-top: 8px;">
         <label style="font-weight: 600; font-size: 0.9rem;">Change Status (Admin only):</label>
