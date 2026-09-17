@@ -1,9 +1,9 @@
 const express = require('express');
-const router = express.Router();// crea un mini servidor para manejar las rutas de alertas
-const pool = require('../db/connection'); // conexión a la base de datos
+const router = express.Router();
+const pool = require('../db/connection');
 const { verificarToken, verificarAdmin } = require('../middleware/autenticacion');
 
-// GET /api/alertas - obtener todas las alertas
+
 router.get('/', async (req, res) => {
   try {
     const result = await pool.query(
@@ -15,36 +15,29 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ===== FILTRAR ALERTAS POR TIPO Y ZONA =====
-// GET /api/alertas/filtro?tipo=hueco&radio=5&lat=10.4236&lng=-75.5378
+//Descartado por el momento
 router.get('/filtro', async (req, res) => {
   try {
-    // Recibir parámetros de la URL
+
     const { tipo, radio, lat, lng } = req.query;
 
-    // Validar que todos los parámetros estén presentes
     if (!tipo || !radio || !lat || !lng) {
       return res.status(400).json({ 
         error: 'Missing parameters: tipo, radio, lat, lng required' 
       });
     }
 
-    // Convertir a números (seguridad)
     const radioNum = parseFloat(radio);
     const latNum = parseFloat(lat);
     const lngNum = parseFloat(lng);
 
-    // Validar que sean números válidos
     if (isNaN(radioNum) || isNaN(latNum) || isNaN(lngNum)) {
       return res.status(400).json({ 
         error: 'Invalid number format for radio, lat, or lng' 
       });
     }
 
-    // Consulta SQL con PostGIS
-    // ST_DWithin compara distancias geográficas
-    // ST_MakePoint crea un vector (longitud, latitud)
-    // radio * 1000 convierte km a metros
+
     const query = `
       SELECT 
         a.id,
@@ -69,14 +62,9 @@ router.get('/filtro', async (req, res) => {
       ORDER BY a.fecha_creacion DESC
     `;
 
-    // Ejecutar consulta
-    // $1 = tipo
-    // $2 = latitud
-    // $3 = longitud
-    // $4 = radio (en km)
+    
     const result = await pool.query(query, [tipo, latNum, lngNum, radioNum]);
 
-    // Devolver alertas filtradas
     res.json(result.rows);
 
   } catch (error) {
@@ -84,40 +72,41 @@ router.get('/filtro', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-// ===== OBTENER ESTADÍSTICAS =====
+
+
 router.get('/stats', async (req, res) => {
   try {
-    // Total de alertas
+    
     const totalResult = await pool.query('SELECT COUNT(*) as total FROM alertas');
     const totalAlertas = parseInt(totalResult.rows[0].total);
 
-    // Alertas activas
+
     const activasResult = await pool.query("SELECT COUNT(*) as activas FROM alertas WHERE estado = 'activa'");
     const alertasActivas = parseInt(activasResult.rows[0].activas);
 
-    // Alertas resueltas
+
     const resueltasResult = await pool.query("SELECT COUNT(*) as resueltas FROM alertas WHERE estado = 'resuelta'");
     const alertasResueltas = parseInt(resueltasResult.rows[0].resueltas);
 
-    // Alertas por tipo
+
     const porTipoResult = await pool.query(`
       SELECT tipo, COUNT(*) as cantidad
       FROM alertas
       GROUP BY tipo
       ORDER BY cantidad DESC
     `);
-
+    //no se utiliza
     const alertasPorTipo = {};
     porTipoResult.rows.forEach(row => {
       alertasPorTipo[row.tipo] = parseInt(row.cantidad);
     });
 
-    // Devolver estadísticas
+
     res.json({
       totalAlertas,
       alertasActivas,
       alertasResueltas,
-      alertasPorTipo
+      alertasPorTipo 
     });
 
   } catch (error) {
@@ -126,7 +115,7 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-// GET /api/alertas/:id - obtener una alerta por id
+
 router.get('/:id', async (req, res) => {
   try {
     const result = await pool.query(
@@ -134,7 +123,7 @@ router.get('/:id', async (req, res) => {
       [req.params.id]
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Alerta no encontrada' });
+      return res.status(404).json({ error: 'Alert not found' });
     }
     res.json(result.rows[0]);
   } catch (err) {
@@ -142,10 +131,10 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/alertas - crear una alerta nueva
+
 router.post('/', verificarToken, async (req, res) => {
   const { titulo, descripcion, tipo, latitud, longitud, categoria_id } = req.body;
-  const usuario_id = req.usuario.id;  // Obtener del token JWT
+  const usuario_id = req.usuario.id;
 
   try {
     const result = await pool.query(
@@ -160,50 +149,50 @@ router.post('/', verificarToken, async (req, res) => {
   }
 });
 
-// PUT /api/alertas/:id - Cambiar estado
+
 router.put('/:id', async (req, res) => {
   const { estado } = req.body;
   const { id } = req.params;
   
   try {
-    // Validar que sea "activa" o "resuelta"
+ 
     if (!['activa', 'resuelta'].includes(estado)) {
-      return res.status(400).json({ error: 'Estado inválido' });
+      return res.status(400).json({ error: 'invalid status' });
     }
     
-    // Actualizar en BD
+    
     const result = await pool.query(
       'UPDATE alertas SET estado = $1 WHERE id = $2 RETURNING *',
       [estado, id]
     );
     
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Alerta no encontrada' });
+      return res.status(404).json({ error: 'Alert not found' }); 
     }
     
-    res.json(result.rows[0]); // Devuelve alerta actualizada
+    res.json(result.rows[0]); 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 
-// ===== OBTENER ESTADÍSTICAS =====
+
 router.get('/stats', async (req, res) => {
   try {
-    // Total de alertas
+    
     const totalResult = await pool.query('SELECT COUNT(*) as total FROM alertas');
     const totalAlertas = parseInt(totalResult.rows[0].total);
 
-    // Alertas activas
+    
     const activasResult = await pool.query("SELECT COUNT(*) as activas FROM alertas WHERE estado = 'activa'");
     const alertasActivas = parseInt(activasResult.rows[0].activas);
 
-    // Alertas resueltas
+  
     const resueltasResult = await pool.query("SELECT COUNT(*) as resueltas FROM alertas WHERE estado = 'resuelta'");
     const alertasResueltas = parseInt(resueltasResult.rows[0].resueltas);
 
-    // Alertas por tipo
+    
     const porTipoResult = await pool.query(`
       SELECT tipo, COUNT(*) as cantidad
       FROM alertas
@@ -216,7 +205,7 @@ router.get('/stats', async (req, res) => {
       alertasPorTipo[row.tipo] = parseInt(row.cantidad);
     });
 
-    // Devolver estadísticas
+
     res.json({
       totalAlertas,
       alertasActivas,
@@ -229,31 +218,32 @@ router.get('/stats', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-// DELETE /api/alertas/:id - Eliminar una alerta
+
+
 router.delete('/:id', verificarToken, async (req, res) => {
   const { id } = req.params;
   const usuario_id = req.usuario.id;
   
   try {
-    // Verificar que sea el dueño o admin
+    
     const alertaResult = await pool.query(
       'SELECT usuario_id FROM alertas WHERE id = $1',
       [id]
     );
     
     if (alertaResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Alerta no encontrada' });
+      return res.status(404).json({ error: 'Alert not found' });
     }
     
-    // Solo el dueño o admin puede eliminar
+
     if (alertaResult.rows[0].usuario_id !== usuario_id && req.usuario.rol !== 'admin') {
-      return res.status(403).json({ error: 'No tienes permiso' });
+      return res.status(403).json({ error: 'You don\'t have permission to delete this alert' });
     }
     
-    // Eliminar
+
     await pool.query('DELETE FROM alertas WHERE id = $1', [id]);
     
-    res.json({ message: 'Alerta eliminada' });
+    res.json({ message: 'Alert deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -1,27 +1,27 @@
-// ===== CONFIGURACIÓN =====
+
 const API_URL = 'http://localhost:3000/api';
 const CARTAGENA_COORDS = [10.4236, -75.5378];
 const DEFAULT_ZOOM = 13;
 
-// ===== ESTADO GLOBAL =====
+
 let map;
 let markers = [];
 let selectedCoords = null;
 let token = localStorage.getItem('safecity_token');
 let currentUser = JSON.parse(localStorage.getItem('safecity_user') || 'null');
 
-// ===== INICIALIZAR EL MAPA =====
+
 function initMap() {
-  // Crear el mapa centrado en Cartagena
+  
   map = L.map('map').setView(CARTAGENA_COORDS, DEFAULT_ZOOM);
   
-  // Agregar la capa de OpenStreetMap (las imágenes del mapa)
+  
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
     maxZoom: 19
   }).addTo(map);
 
-  // Permitir al usuario hacer clic en el mapa para seleccionar ubicación
+
   map.on('click', (e) => {
     if (!token) {
       showNotification('Please login to report alerts', 'error');
@@ -34,18 +34,18 @@ function initMap() {
   });
 }
 
-// ===== CARGAR ALERTAS DESDE LA API =====
+
 async function loadAlerts() {
   try {
-    // Hacer petición GET a la API
+    
     const response = await fetch(`${API_URL}/alertas`);
     const alerts = await response.json();
     
-    // Limpiar marcadores anteriores del mapa
+    
     markers.forEach(m => map.removeLayer(m));
     markers = [];
 
-    // Agregar un marcador por cada alerta
+    
     alerts.forEach(alert => {
       const marker = L.marker([alert.latitud, alert.longitud])
         .bindPopup(createPopupContent(alert))
@@ -53,7 +53,7 @@ async function loadAlerts() {
       markers.push(marker);
     });
 
-    // Agregar event listeners a los botones DELETE (usando delegación)
+    
     setTimeout(() => {
       document.addEventListener('click', async (e) => {
         if (e.target.classList.contains('delete-btn')) {
@@ -85,7 +85,7 @@ async function loadAlerts() {
       });
     }, 100);
 
-    // ===== EVENT LISTENER PARA CAMBIAR ESTADO =====
+    
 setTimeout(() => {
   document.addEventListener('click', async (e) => {
     if (e.target.classList.contains('status-btn')) {
@@ -108,7 +108,7 @@ setTimeout(() => {
 
         if (response.ok) {
           showNotification('Status updated successfully!');
-          loadAlerts(); // Recargar para ver el cambio
+          loadAlerts(); 
         } else {
           const data = await response.json();
           showNotification(data.error || 'Failed to update status', 'error');
@@ -120,7 +120,7 @@ setTimeout(() => {
   });
 }, 100);
 
-    // Actualizar contador de estadísticas
+    
     document.getElementById('totalAlerts').textContent = alerts.length;
   } catch (error) {
     console.error('Error loading alerts:', error);
@@ -128,8 +128,7 @@ setTimeout(() => {
   }
 }
 
-// ===== CREAR CONTENIDO DEL POPUP =====
-// Crear contenido del popup con botón DELETE si es admin o dueño
+
 function createPopupContent(alert) {
   const esAdmin = currentUser?.rol === 'admin';
   const esDueño = currentUser?.id === alert.usuario_id;
@@ -145,7 +144,7 @@ function createPopupContent(alert) {
     `;
   }
 
-  // ===== SELECTOR DE ESTADO - SOLO PARA ADMIN =====
+  
   let statusSection = '';
   if (token && esAdmin) {
     statusSection = `
@@ -153,8 +152,8 @@ function createPopupContent(alert) {
         <label style="font-weight: 600; font-size: 0.9rem;">Change Status (Admin only):</label>
         <select id="status-select-${alert.id}" 
                 style="width: 100%; padding: 6px; margin: 6px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem;">
-          <option value="activa" ${alert.estado === 'activa' ? 'selected' : ''}>Activa</option>
-          <option value="resuelta" ${alert.estado === 'resuelta' ? 'selected' : ''}>Resuelta</option>
+          <option value="active" ${alert.estado === 'active' ? 'selected' : ''}>Active</option>
+          <option value="resolved" ${alert.estado === 'resolved' ? 'selected' : ''}>Resolved</option>
         </select>
         <button class="status-btn" data-alert-id="${alert.id}"
                 style="width: 100%; background: #27AE60; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
@@ -176,9 +175,7 @@ function createPopupContent(alert) {
   `;
 }
 
-// ===== FUNCIONES DE AUTENTICACIÓN =====
 
-// Registrar nuevo usuario
 async function register(name, email, password) {
   try {
     const response = await fetch(`${API_URL}/usuarios/register`, {
@@ -201,7 +198,7 @@ async function register(name, email, password) {
   }
 }
 
-// Iniciar sesión y obtener token JWT
+
 async function login(email, password) {
   try {
     const response = await fetch(`${API_URL}/usuarios/login`, {
@@ -213,7 +210,7 @@ async function login(email, password) {
     const data = await response.json();
 
     if (response.ok && data.token) {
-      // Guardar token y usuario en localStorage del navegador
+      
       token = data.token;
       currentUser = data.usuario || { email };
       localStorage.setItem('safecity_token', token);
@@ -230,7 +227,7 @@ async function login(email, password) {
   }
 }
 
-// Cerrar sesión y limpiar token
+
 function logout() {
   token = null;
   currentUser = null;
@@ -240,9 +237,7 @@ function logout() {
   showNotification('Logged out successfully');
 }
 
-// ===== ACTUALIZAR INTERFAZ =====
 
-// Mostrar elementos cuando hay sesión activa
 function updateUIAfterLogin() {
   document.getElementById('loginBtn').style.display = 'none';
   document.getElementById('registerBtn').style.display = 'none';
@@ -255,7 +250,6 @@ function updateUIAfterLogin() {
   document.getElementById('userName').textContent = userName + adminBadge;
 }
 
-// Mostrar elementos cuando no hay sesión
 function updateUIAfterLogout() {
   document.getElementById('loginBtn').style.display = 'inline-block';
   document.getElementById('registerBtn').style.display = 'inline-block';
@@ -263,30 +257,26 @@ function updateUIAfterLogout() {
   document.getElementById('userInfo').style.display = 'none';
 }
 
-// ===== ENVIAR NUEVA ALERTA =====
+
 async function submitAlert(e) {
   e.preventDefault();
 
-  // Validar que esté autenticado
   if (!token) {
     showNotification('Please login first', 'error');
     return;
   }
 
-  // Validar que haya seleccionado coordenadas en el mapa
   if (!selectedCoords) {
     showNotification('Click on the map to set location', 'error');
     return;
   }
 
-  // Obtener datos del formulario
   const titulo = document.getElementById('title').value;
   const descripcion = document.getElementById('description').value;
   const categoria_id = document.getElementById('categoryId').value;
   const tipo = document.getElementById('categoryId').selectedOptions[0].text;
 
   try {
-    // Enviar petición POST con el token JWT
     const response = await fetch(`${API_URL}/alertas`, {
       method: 'POST',
       headers: {
@@ -307,7 +297,6 @@ async function submitAlert(e) {
       showNotification('Alert submitted successfully!');
       document.getElementById('alertForm').reset();
       selectedCoords = null;
-      // Recargar las alertas para que aparezca la nueva
       loadAlerts();
     } else {
       const data = await response.json();
@@ -318,73 +307,63 @@ async function submitAlert(e) {
   }
 }
 
-// ===== HELPERS DE MODAL =====
-
-// Abrir un modal por su ID
 function openModal(id) {
   document.getElementById(id).classList.add('active');
 }
 
-// Cerrar un modal por su ID
+
 function closeModal(id) {
   document.getElementById(id).classList.remove('active');
 }
 
-// ===== NOTIFICACIONES EN PANTALLA =====
 function showNotification(message, type = 'success') {
   const notification = document.getElementById('notification');
   notification.textContent = message;
   notification.className = `notification show ${type === 'error' ? 'error' : ''}`;
   
-  // Ocultar la notificación después de 3 segundos
   setTimeout(() => {
     notification.classList.remove('show');
   }, 3000);
 }
 
-// ===== EVENT LISTENERS (cuando el DOM esté listo) =====
 document.addEventListener('DOMContentLoaded', () => {
-  // Inicializar el mapa y cargar alertas
   initMap();
   loadAlerts();
-  // ===== GEOLOCALIZACIÓN =====
+  
 document.getElementById('myLocationBtn').addEventListener('click', () => {
-  // Pedir ubicación del navegador
   navigator.geolocation.getCurrentPosition((position) => {
     const lat = position.coords.latitude;
     const lng = position.coords.longitude;
     
-    // Llenar el campo de coordenadas
     document.getElementById('coords').value = `${lat}, ${lng}`;
     
-    // Opcional: mover el mapa a esa ubicación
     map.setView([lat, lng], 15);
     
-    // Mostrar notificación
+
     showNotification('Location obtained!');
   }, (error) => {
     showNotification('Could not get location. Allow location access.', 'error');
   });
 });
 
-  // Restaurar sesión si ya había un token guardado
+ 
   if (token && currentUser) {
     updateUIAfterLogin();
   }
 
-  // Botones de autenticación
+  
   document.getElementById('loginBtn').addEventListener('click', () => openModal('loginModal'));
   document.getElementById('registerBtn').addEventListener('click', () => openModal('registerModal'));
   document.getElementById('logoutBtn').addEventListener('click', logout);
 
-  // Botones de cerrar modal
+  
   document.querySelectorAll('.close').forEach(btn => {
     btn.addEventListener('click', () => {
       closeModal(btn.dataset.modal);
     });
   });
 
-  // Formulario de login
+  
   document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value;
@@ -392,7 +371,7 @@ document.getElementById('myLocationBtn').addEventListener('click', () => {
     login(email, password);
   });
 
-  // Formulario de registro
+  
   document.getElementById('registerForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.getElementById('registerName').value;
@@ -401,11 +380,11 @@ document.getElementById('myLocationBtn').addEventListener('click', () => {
     register(name, email, password);
   });
 
-  // Formulario para crear alerta
+  
   document.getElementById('alertForm').addEventListener('submit', submitAlert);
 
 });
-// ===== CARGAR ESTADÍSTICAS =====
+
 async function loadStats() {
   try {
 
@@ -421,46 +400,41 @@ async function loadStats() {
   }
 }
 
-// Cargar estadísticas al iniciar
+
 loadStats();
 
-// ===== TOGGLE SIDEBAR =====
+
 document.getElementById('toggleSidebar').addEventListener('click', () => {
   const sidebar = document.getElementById('sidebar');
   sidebar.classList.toggle('closed');
 });
 
-// Cerrar sidebar al hacer clic en "Submit Alert"
+
 document.getElementById('alertForm').addEventListener('submit', () => {
   document.getElementById('sidebar').classList.add('closed');
 });
 
-// ===== NAVEGACIÓN DE SECCIONES =====
+
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
     const sectionId = btn.dataset.section;
     
-    // Remover clase active de todos los botones
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     
-    // Remover clase active de todas las secciones
     document.querySelectorAll('.sidebar-section').forEach(section => {
       section.classList.remove('active');
     });
     
-    // Activar la sección seleccionada
     document.getElementById(sectionId).classList.add('active');
   });
 });
 
-// ===== CARGAR ALERTAS DEL USUARIO =====
 async function loadUserAlerts() {
   try {
     const response = await fetch(`${API_URL}/alertas`);
     const alerts = await response.json();
     
-    // Filtrar solo alertas del usuario actual
     const userAlerts = alerts.filter(a => a.usuario_id === currentUser?.id);
     
     const alertsList = document.getElementById('userAlertsList');
@@ -484,7 +458,6 @@ async function loadUserAlerts() {
   }
 }
 
-// ===== CARGAR INFO DE CUENTA =====
 function loadAccountInfo() {
   if (currentUser) {
     document.getElementById('userEmail').textContent = currentUser.email || '-';
@@ -493,6 +466,6 @@ function loadAccountInfo() {
   }
 }
 
-// Cargar datos cuando se abre la sección
+
 document.querySelector('[data-section="view-alerts"]').addEventListener('click', loadUserAlerts);
 document.querySelector('[data-section="account"]').addEventListener('click', loadAccountInfo);
