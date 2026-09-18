@@ -1,15 +1,36 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db/connection');
-const { verificarToken, verificarAdmin } = require('../middleware/autenticacion');
+const { verificarToken, verificarAdmin } = require('../middleware/autenticacion');  
 
 
 router.get('/', async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const offset = (page - 1) * limit;
+
+    // Obtener el total de alertas
+    const totalResult = await pool.query('SELECT COUNT(*) FROM alertas');
+    const total = parseInt(totalResult.rows[0].count);
+    const pages = Math.ceil(total / limit);
+
+    // Obtener las alertas paginadas
     const result = await pool.query(
-      'SELECT id, titulo, descripcion, tipo, estado, latitud, longitud, usuario_id, fecha_creacion FROM alertas ORDER BY fecha_creacion DESC'
+      'SELECT id, titulo, descripcion, tipo, estado, latitud, longitud FROM alertas LIMIT $1 OFFSET $2',
+      [limit, offset]
     );
-    res.json(result.rows);
+
+    // Responder con data y paginacion
+    res.json({
+      data: result.rows,
+      pagination: {
+        page: page,
+        limit: limit,
+        total: total,
+        pages: pages
+      }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
