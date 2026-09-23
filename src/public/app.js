@@ -443,7 +443,7 @@ async function loadUserAlerts() {
       alertsList.innerHTML = '<p style="text-align: center; color: #7F8C8D;">No alerts yet</p>';
       return;
     }
-    
+    // Mostrar solo título, estado y tipo de cada alerta
     alertsList.innerHTML = userAlerts.map(alert => `
       <div class="alert-item">
         <div class="alert-item-title">${alert.titulo}</div>
