@@ -498,3 +498,15 @@ function loadAccountInfo() {
 // Cargar datos cuando se abre la sección
 document.querySelector('[data-section="view-alerts"]').addEventListener('click', loadUserAlerts);
 document.querySelector('[data-section="account"]').addEventListener('click', loadAccountInfo);
+
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (currentPage > 1) {
+    loadAlerts(currentPage - 1);
+  }
+});
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (currentPage < totalPages) {
+    loadAlerts(currentPage + 1);
+  }
+});

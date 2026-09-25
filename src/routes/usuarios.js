@@ -1,16 +1,16 @@
-const express = require('express');
+const express = require('express'); 
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../db/connection');
 const { verificarToken, verificarAdmin } = require('../middleware/autenticacion');
 
-
+// POST /api/usuarios/register - registrar un usuario nuevo
 router.post('/register', async (req, res) => {
   const { nombre, email, password } = req.body;
 
   try {
-    
+    // Verificar si el usuario ya existe
     const usuarioExistente = await pool.query(
       'SELECT * FROM usuarios WHERE email = $1',
       [email]
@@ -20,10 +20,10 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    
+    // Hashear la contraseña
     const passwordHash = await bcrypt.hash(password, 10);
 
-    
+    // Insertar el usuario en la base de datos
     const result = await pool.query(
       'INSERT INTO usuarios (nombre, email, password_hash, rol) VALUES ($1, $2, $3, $4) RETURNING id, nombre, email, rol',
       [nombre, email, passwordHash, 'ciudadano']
@@ -38,12 +38,12 @@ router.post('/register', async (req, res) => {
   }
 });
 
-
+// POST /api/usuarios/login - iniciar sesión
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    
+    // Buscar el usuario por email
     const result = await pool.query(
       'SELECT * FROM usuarios WHERE email = $1',
       [email]
@@ -55,14 +55,14 @@ router.post('/login', async (req, res) => {
 
     const usuario = result.rows[0];
 
-    
+    // Comparar la contraseña ingresada con el hash guardado
     const passwordValida = await bcrypt.compare(password, usuario.password_hash);
 
     if (!passwordValida) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    
+    // Generar el token JWT
     const token = jwt.sign(
       { id: usuario.id, email: usuario.email, rol: usuario.rol },
       process.env.JWT_SECRET,
@@ -84,7 +84,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-
+// GET /api/usuarios/:id - obtener un usuario por id
 router.get('/:id', async (req, res) => {
   try {
     const result = await pool.query(
@@ -102,7 +102,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-
+// GET /api/usuarios/me - obtener los datos del usuario autenticado
 router.get('/perfil/me', verificarToken, async (req, res) => {
   try {
     const result = await pool.query(
