@@ -2,10 +2,18 @@ const express = require('express'); //
 const path = require('path'); //
 require('dotenv').config(); // Cargar variables de entorno desde .env
 
+const rateLimit = require('express-rate-limit');
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100
+});
+
 const app = express();
 
 // Permitir que el servidor reciba JSON
 app.use(express.json());
+app.use(limiter);
 
 // Servir archivos estáticos del frontend (carpeta public)
 app.use(express.static(path.join(__dirname, 'public')));
