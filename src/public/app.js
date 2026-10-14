@@ -37,24 +37,6 @@ function initMap() {
 }
 
 // ===== CARGAR ALERTAS DESDE LA API =====
-async function loadAlerts() {
-  try {
-    // Hacer petición GET a la API
-    const response = await fetch(`${API_URL}/alertas`);
-    const alerts = await response.json();
-    
-    // Limpiar marcadores anteriores del mapa
-    markers.forEach(m => map.removeLayer(m));
-    markers = [];
-
-    // Agregar un marcador por cada alerta
-    alerts.forEach(alert => {
-      const marker = L.marker([alert.latitud, alert.longitud])
-        .bindPopup(createPopupContent(alert))
-        .addTo(map);
-      markers.push(marker);
-    });
-
     function loadAlerts(page = 1) {
   fetch(`${API_URL}/alertas?page=${page}`)
     .then(r => r.json())
@@ -87,48 +69,6 @@ function updatePaginationUI() {
   document.getElementById('nextBtn').disabled = currentPage === totalPages;
 }
 
-    // ===== EVENT LISTENER PARA CAMBIAR ESTADO =====
-setTimeout(() => {
-  document.addEventListener('click', async (e) => {
-    if (e.target.classList.contains('status-btn')) {
-      e.preventDefault(); 
-      e.stopPropagation(); 
-      
-      const alertId = e.target.dataset.alertId; 
-      const selectId = `status-select-${alertId}`; 
-      const newStatus = document.getElementById(selectId).value;
-      
-      try {
-        const response = await fetch(`${API_URL}/alertas/${alertId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ estado: newStatus })
-        });
-
-        if (response.ok) {
-          showNotification('Status updated successfully!');
-          loadAlerts(); // Recargar para ver el cambio
-        } else {
-          const data = await response.json();
-          showNotification(data.error || 'Failed to update status', 'error');
-        }
-      } catch (error) {
-        showNotification('Connection error', 'error');
-      }
-    }
-  });
-}, 100);
-
-    // Actualizar contador de estadísticas
-    document.getElementById('totalAlerts').textContent = alerts.length;
-  } catch (error) {
-    console.error('Error loading alerts:', error);
-    showNotification('Error loading alerts', 'error');
-  }
-}
 
 // ===== CREAR CONTENIDO DEL POPUP =====
 // Crear contenido del popup con botón DELETE si es admin o dueño
