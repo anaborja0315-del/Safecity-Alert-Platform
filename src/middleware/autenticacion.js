@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken'); 
 
 // Middleware que verifica si el usuario está autenticado
 const verificarToken = (req, res, next) => { 

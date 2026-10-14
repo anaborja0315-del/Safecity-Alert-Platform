@@ -46,7 +46,7 @@ CREATE TABLE historial_alertas (
 );
 
 -- Enable PostGIS
-CREATE EXTENSION postgis;
+CREATE EXTENSION postgis; // Para soporte de datos geoespaciales y
 
 -- Sample data
 INSERT INTO categorias (nombre, icono, color) VALUES

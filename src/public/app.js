@@ -8,6 +8,8 @@ let map;
 let markers = [];
 let selectedCoords = null;
 let token = localStorage.getItem('safecity_token');
+let currentPage = 1;
+let totalPages = 1;
 let currentUser = JSON.parse(localStorage.getItem('safecity_user') || 'null');
 
 // ===== INICIALIZAR EL MAPA =====
@@ -29,104 +31,44 @@ function initMap() {
     }
     selectedCoords = [e.latlng.lat, e.latlng.lng];
     document.getElementById('coords').value = 
-      `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+      `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`; 
     showNotification('Location selected! Fill the form to submit.');
   });
 }
 
 // ===== CARGAR ALERTAS DESDE LA API =====
-async function loadAlerts() {
-  try {
-    // Hacer petición GET a la API
-    const response = await fetch(`${API_URL}/alertas`);
-    const alerts = await response.json();
-    
-    // Limpiar marcadores anteriores del mapa
-    markers.forEach(m => map.removeLayer(m));
-    markers = [];
+    function loadAlerts(page = 1) {
+  fetch(`${API_URL}/alertas?page=${page}`)
+    .then(r => r.json())
+    .then(response => {
+      const alertas = response.data;
+      totalPages = response.pagination.pages;
+      currentPage = response.pagination.page;
 
-    // Agregar un marcador por cada alerta
-    alerts.forEach(alert => {
-      const marker = L.marker([alert.latitud, alert.longitud])
-        .bindPopup(createPopupContent(alert))
-        .addTo(map);
-      markers.push(marker);
-    });
-
-    // Agregar event listeners a los botones DELETE (usando delegación)
-    setTimeout(() => {
-      document.addEventListener('click', async (e) => {
-        if (e.target.classList.contains('delete-btn')) {
-          e.preventDefault();
-          e.stopPropagation();
-          const alertId = e.target.dataset.alertId;
-          
-          if (confirm('Are you sure you want to delete this alert?')) {
-            try {
-              const response = await fetch(`${API_URL}/alertas/${alertId}`, {
-                method: 'DELETE',
-                headers: {
-                  'Authorization': `Bearer ${token}`
-                }
-              });
-
-              if (response.ok) {
-                showNotification('Alert deleted successfully');
-                loadAlerts();
-              } else {
-                const data = await response.json(); 
-                showNotification(data.error || 'Failed to delete', 'error');
-              }
-            } catch (error) {
-              showNotification('Connection error', 'error');
-            }
-          }
+      map.eachLayer(layer => {
+        if (layer instanceof L.Marker) {
+          map.removeLayer(layer);
         }
       });
-    }, 100);
 
-    // ===== EVENT LISTENER PARA CAMBIAR ESTADO =====
-setTimeout(() => {
-  document.addEventListener('click', async (e) => {
-    if (e.target.classList.contains('status-btn')) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const alertId = e.target.dataset.alertId;
-      const selectId = `status-select-${alertId}`;
-      const newStatus = document.getElementById(selectId).value;
-      
-      try {
-        const response = await fetch(`${API_URL}/alertas/${alertId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ estado: newStatus })
-        });
+      alertas.forEach(alerta => {
+        L.marker([alerta.latitud, alerta.longitud])
+          .bindPopup(`<h3>${alerta.titulo}</h3><p>${alerta.descripcion}</p>`)
+          .addTo(map);
+      });
 
-        if (response.ok) {
-          showNotification('Status updated successfully!');
-          loadAlerts(); // Recargar para ver el cambio
-        } else {
-          const data = await response.json();
-          showNotification(data.error || 'Failed to update status', 'error');
-        }
-      } catch (error) {
-        showNotification('Connection error', 'error');
-      }
-    }
-  });
-}, 100);
-
-    // Actualizar contador de estadísticas
-    document.getElementById('totalAlerts').textContent = alerts.length;
-  } catch (error) {
-    console.error('Error loading alerts:', error);
-    showNotification('Error loading alerts', 'error');
-  }
+      updatePaginationUI();
+    });
 }
+
+function updatePaginationUI() {
+  document.getElementById('pageInfo').textContent = 
+    `Página ${currentPage} de ${totalPages}`;
+  
+  document.getElementById('prevBtn').disabled = currentPage === 1;
+  document.getElementById('nextBtn').disabled = currentPage === totalPages;
+}
+
 
 // ===== CREAR CONTENIDO DEL POPUP =====
 // Crear contenido del popup con botón DELETE si es admin o dueño
@@ -182,7 +124,7 @@ function createPopupContent(alert) {
 async function register(name, email, password) {
   try {
     const response = await fetch(`${API_URL}/usuarios/register`, {
-      method: 'POST',
+      method: 'POST', 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nombre: name, email, password })
     });
@@ -321,7 +263,7 @@ async function submitAlert(e) {
 // ===== HELPERS DE MODAL =====
 
 // Abrir un modal por su ID
-function openModal(id) {
+function openModal(id) { 
   document.getElementById(id).classList.add('active');
 }
 
@@ -339,7 +281,7 @@ function showNotification(message, type = 'success') {
   // Ocultar la notificación después de 3 segundos
   setTimeout(() => {
     notification.classList.remove('show');
-  }, 3000);
+  }, 3000); 
 }
 
 // ===== EVENT LISTENERS (cuando el DOM esté listo) =====
@@ -469,7 +411,7 @@ async function loadUserAlerts() {
       alertsList.innerHTML = '<p style="text-align: center; color: #7F8C8D;">No alerts yet</p>';
       return;
     }
-    
+    // Mostrar solo título, estado y tipo de cada alerta
     alertsList.innerHTML = userAlerts.map(alert => `
       <div class="alert-item">
         <div class="alert-item-title">${alert.titulo}</div>
@@ -496,3 +438,15 @@ function loadAccountInfo() {
 // Cargar datos cuando se abre la sección
 document.querySelector('[data-section="view-alerts"]').addEventListener('click', loadUserAlerts);
 document.querySelector('[data-section="account"]').addEventListener('click', loadAccountInfo);
+
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (currentPage > 1) {
+    loadAlerts(currentPage - 1);
+  }
+});
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (currentPage < totalPages) {
+    loadAlerts(currentPage + 1);
+  }
+});
