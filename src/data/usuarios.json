@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": 1,
+    "nombre": "Mariana Pacheco",
+    "email": "mariana@safecity.com",
+    "password_hash": "$2b$10$eZEysoBIAxvapZyfNKsmSOr8sZQRWZ2KDR4OFw5m3RltbpUOz3fnS",
+    "rol": "admin"
+  },
+  {
+    "id": 2,
+    "nombre": "Ana Borja",
+    "email": "ciudadano@safecity.com",
+    "password_hash": "$2b$10$u59/ejOlu8AtPrc77/wHGusqEZccsiHVov/1AAml4V8ezVowHyw32",
+    "rol": "ciudadano"
+  }
+]
