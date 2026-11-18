@@ -1,37 +1,50 @@
-const express = require('express'); 
+const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const pool = require('../db/connection');
-const { verificarToken, verificarAdmin } = require('../middleware/autenticacion');
+const { read, write, nextId } = require('../store');
+const { verificarToken } = require('../middleware/autenticacion');
+const TablaHash = require('../estructuras/TablaHash');
+
+const FILE = 'usuarios.json';
+
+// Indice de usuarios por email (TablaHash), cargado al iniciar el servidor.
+const usuarios = read(FILE);
+const tablaUsuarios = new TablaHash();
+usuarios.forEach(u => tablaUsuarios.poner(u.email, u));
 
 // POST /api/usuarios/register - registrar un usuario nuevo
 router.post('/register', async (req, res) => {
   const { nombre, email, password } = req.body;
 
   try {
-    // Verificar si el usuario ya existe
-    const usuarioExistente = await pool.query(
-      'SELECT * FROM usuarios WHERE email = $1',
-      [email]
-    );
-
-    if (usuarioExistente.rows.length > 0) {
+    // Rechazar emails duplicados usando la tabla hash
+    if (tablaUsuarios.existe(email)) {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    // Hashear la contraseña
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Insertar el usuario en la base de datos
-    const result = await pool.query(
-      'INSERT INTO usuarios (nombre, email, password_hash, rol) VALUES ($1, $2, $3, $4) RETURNING id, nombre, email, rol',
-      [nombre, email, passwordHash, 'ciudadano']
-    );
+    const nuevoUsuario = {
+      id: nextId(usuarios),
+      nombre,
+      email,
+      password_hash: passwordHash,
+      rol: 'ciudadano'
+    };
+
+    usuarios.push(nuevoUsuario);
+    write(FILE, usuarios);
+    tablaUsuarios.poner(email, nuevoUsuario);
 
     res.status(201).json({
       message: 'User registered successfully',
-      user: result.rows[0]
+      user: {
+        id: nuevoUsuario.id,
+        nombre: nuevoUsuario.nombre,
+        email: nuevoUsuario.email,
+        rol: nuevoUsuario.rol
+      }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -43,30 +56,22 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Buscar el usuario por email
-    const result = await pool.query(
-      'SELECT * FROM usuarios WHERE email = $1',
-      [email]
-    );
+    // Buscar el usuario por email usando la tabla hash
+    const usuario = tablaUsuarios.obtener(email);
 
-    if (result.rows.length === 0) {
+    if (!usuario) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const usuario = result.rows[0];
-
-    // Comparar la contraseña ingresada con el hash guardado
     const passwordValida = await bcrypt.compare(password, usuario.password_hash);
-
     if (!passwordValida) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Generar el token JWT
     const token = jwt.sign(
       { id: usuario.id, email: usuario.email, rol: usuario.rol },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '30d' }
     );
 
     res.json({
@@ -85,36 +90,36 @@ router.post('/login', async (req, res) => {
 });
 
 // GET /api/usuarios/:id - obtener un usuario por id
-router.get('/:id', async (req, res) => {
+router.get('/:id', (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT id, nombre, email, rol FROM usuarios WHERE id = $1',
-      [req.params.id]
-    );
-
-    if (result.rows.length === 0) {
+    const usuario = usuarios.find(u => String(u.id) === String(req.params.id));
+    if (!usuario) {
       return res.status(404).json({ error: 'User not found' });
     }
-
-    res.json(result.rows[0]);
+    res.json({
+      id: usuario.id,
+      nombre: usuario.nombre,
+      email: usuario.email,
+      rol: usuario.rol
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/usuarios/me - obtener los datos del usuario autenticado
-router.get('/perfil/me', verificarToken, async (req, res) => {
+// GET /api/usuarios/perfil/me - obtener los datos del usuario autenticado
+router.get('/perfil/me', verificarToken, (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT id, nombre, email, rol FROM usuarios WHERE id = $1',
-      [req.usuario.id]
-    );
-
-    if (result.rows.length === 0) {
+    const usuario = usuarios.find(u => String(u.id) === String(req.usuario.id));
+    if (!usuario) {
       return res.status(404).json({ error: 'User not found' });
     }
-
-    res.json(result.rows[0]);
+    res.json({
+      id: usuario.id,
+      nombre: usuario.nombre,
+      email: usuario.email,
+      rol: usuario.rol
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

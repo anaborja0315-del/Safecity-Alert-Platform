@@ -25,7 +25,6 @@
         <button id="loginBtn" class="btn btn-primary">Login</button>
         <button id="registerBtn" class="btn btn-secondary">Register</button>
         <button id="logoutBtnHeader" class="btn btn-danger" style="display: none;">Logout</button>
-        </button>
       </nav>
     </header>
 
@@ -47,8 +46,18 @@
     <button class="nav-btn" data-section="account">
       👤 Account
     </button>
+    <button class="nav-btn" data-section="review-queue" id="reviewQueueNavBtn" style="display:none;">
+      📋 Review Queue
+    </button>
     <button class="nav-btn" data-section="statistics">
       📊 Statistics
+    </button>
+  </div>
+
+  <div style="padding: 0 12px 12px;">
+    <button id="undoDeleteBtn" type="button"
+      style="display:none; background: #E67E22; color: white; width: 100%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
+      ↩ Undo delete
     </button>
   </div>
 
@@ -80,6 +89,10 @@
         placeholder="Coordinates (click on map)"
         readonly
       />
+      <button type="button" id="clearLocationBtn"
+        style="background: #95A5A6; color: white; width: 100%; padding: 8px; border: none; border-radius: 4px; cursor: pointer; margin-top: 8px; font-weight: 600;">
+        Clear location
+      </button>
       
     <button 
     type="button" 
@@ -109,6 +122,16 @@
     </div>
   </section>
 
+  <section id="review-queue" class="sidebar-section" style="display:none;">
+    <h2>📋 Review Queue</h2>
+    <p>Pending: <strong id="pendingCount">0</strong></p>
+    <button id="reviewNextBtn" type="button"
+      style="background: #2980B9; color: white; width: 100%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; margin-top: 8px; font-weight: 600;">
+      Review next
+    </button>
+    <div id="reviewedAlert" style="margin-top: 10px;"></div>
+  </section>
+
  
 
 <section id="account" class="sidebar-section">
@@ -125,14 +148,15 @@
 
 </aside>
 
-      <div id="map" class="map"></div>
-
-            <!-- PAGINACIÓN -->
-      <div id="pagination" style="text-align: center; margin: 20px; padding: 15px; background: #f0f0f0; border-radius: 8px;">
-        <button id="prevBtn" style="padding: 8px 15px; margin: 0 10px; cursor: pointer;">◀ Anterior</button>
-        <span id="pageInfo" style="margin: 0 20px; font-weight: bold;">Página 1</span>
-        <button id="nextBtn" style="padding: 8px 15px; margin: 0 10px; cursor: pointer;">Siguiente ▶</button>
+      <div id="map" class="map">
+        <div id="pagination">
+          <button id="prevBtn">Previous</button>
+          <span id="pageInfo">Page 1 of 1</span>
+          <button id="nextBtn">Next</button>
+        </div>
       </div>
+
+
       
     </main>
 
