@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "id": 1,
+    "titulo": "Large pothole on main avenue",
+    "descripcion": "A deep pothole on the main avenue causing traffic issues",
+    "tipo": "🕳️ Pothole",
+    "estado": "activa",
+    "latitud": 10.4236,
+    "longitud": -75.5378,
+    "categoria_id": 1,
+    "usuario_id": 1,
+    "fecha_creacion": "2026-11-15T10:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "titulo": "Street flooding after heavy rain",
+    "descripcion": "Water accumulation blocking the street near the market",
+    "tipo": "🌊 Flooding",
+    "estado": "resuelta",
+    "latitud": 10.425,
+    "longitud": -75.535,
+    "categoria_id": 2,
+    "usuario_id": 1,
+    "fecha_creacion": "2026-11-16T14:30:00.000Z"
+  },
+  {
+    "id": 3,
+    "titulo": "Fallen power cable on sidewalk",
+    "descripcion": "A power cable fell on the sidewalk, posing electric risk",
+    "tipo": "⚡ Electric Risk",
+    "estado": "activa",
+    "latitud": 10.42,
+    "longitud": -75.54,
+    "categoria_id": 3,
+    "usuario_id": 2,
+    "fecha_creacion": "2026-11-17T09:15:00.000Z"
+  },
+  {
+    "id": 4,
+    "titulo": "Poorly lit area at night",
+    "descripcion": "Street with very low lighting, unsafe at night",
+    "tipo": "🚨 Insecurity",
+    "estado": "activa",
+    "latitud": 10.428,
+    "longitud": -75.532,
+    "categoria_id": 4,
+    "usuario_id": 2,
+    "fecha_creacion": "2026-11-18T08:00:00.000Z"
+  }
+]
