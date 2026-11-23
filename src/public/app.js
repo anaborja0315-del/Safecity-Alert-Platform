@@ -137,8 +137,8 @@ function createPopupContent(alert) {
         <label style="font-weight: 600; font-size: 0.9rem;">Change Status (Admin only):</label>
         <select id="status-select-${alert.id}"
                 style="width: 100%; padding: 6px; margin: 6px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem;">
-          <option value="active" ${alert.estado === 'active' ? 'selected' : ''}>Active</option>
-          <option value="resolved" ${alert.estado === 'resolved' ? 'selected' : ''}>Resolved</option>
+          <option value="activa" ${alert.estado === 'activa' ? 'selected' : ''}>Active</option>
+          <option value="resuelta" ${alert.estado === 'resuelta' ? 'selected' : ''}>Resolved</option>
         </select>
         <button class="status-btn" data-alert-id="${alert.id}"
                 style="width: 100%; background: #27AE60; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
@@ -499,8 +499,8 @@ async function reviewNext() {
           <p style="font-size:0.8rem;color:#7F8C8D;">Created: ${data.fecha_creacion ? new Date(data.fecha_creacion).toLocaleString() : '-'}</p>
           <div style="margin-top:8px;">
             <select id="status-select-${data.id}" style="width:100%;padding:6px;margin:6px 0;border:1px solid #ccc;border-radius:4px;">
-              <option value="activa" ${data.estado === 'activa' ? 'selected' : ''}>Activa</option>
-              <option value="resuelta" ${data.estado === 'resuelta' ? 'selected' : ''}>Resuelta</option>
+              <option value="activa" ${data.estado === 'activa' ? 'selected' : ''}>Active</option>
+              <option value="resuelta" ${data.estado === 'resuelta' ? 'selected' : ''}>Resolved</option>
             </select>
             <button class="status-btn" data-alert-id="${data.id}" style="width:100%;background:#27AE60;color:white;padding:6px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:600;">Save Status</button>
           </div>
