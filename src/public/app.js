@@ -493,7 +493,18 @@ async function reviewNext() {
       showNotification('Alert reviewed successfully!');
       const info = document.getElementById('reviewedAlert');
       if (info) {
-        info.innerHTML = `<strong>${data.titulo}</strong><p>${data.descripcion || ''}</p><p style="font-size:0.8rem;color:#7F8C8D;">Status: ${data.estado || 'active'} | Created: ${data.fecha_creacion ? new Date(data.fecha_creacion).toLocaleString() : '-'}</p>`;
+        info.innerHTML = `
+          <strong>${data.titulo}</strong>
+          <p>${data.descripcion || ''}</p>
+          <p style="font-size:0.8rem;color:#7F8C8D;">Created: ${data.fecha_creacion ? new Date(data.fecha_creacion).toLocaleString() : '-'}</p>
+          <div style="margin-top:8px;">
+            <select id="status-select-${data.id}" style="width:100%;padding:6px;margin:6px 0;border:1px solid #ccc;border-radius:4px;">
+              <option value="activa" ${data.estado === 'activa' ? 'selected' : ''}>Activa</option>
+              <option value="resuelta" ${data.estado === 'resuelta' ? 'selected' : ''}>Resuelta</option>
+            </select>
+            <button class="status-btn" data-alert-id="${data.id}" style="width:100%;background:#27AE60;color:white;padding:6px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:600;">Save Status</button>
+          </div>
+        `;
       }
       loadPendingCount();
     } else {
