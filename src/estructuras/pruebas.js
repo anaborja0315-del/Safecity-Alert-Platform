@@ -11,7 +11,6 @@ function prueba(nombre, fn) {
   }
 }
 
-// ===== PILA =====
 prueba('Pila inicia vacia', () => {
   const p = new Pila();
   console.assert(p.estaVacia() === true, 'debe estar vacia');
@@ -45,12 +44,10 @@ prueba('Pila limite 10 descarta el mas antiguo', () => {
   for (let i = 1; i <= 11; i++) p.apilar(i);
   console.assert(p.tamanio() === 10, 'tamanio 10');
   if (p.tamanio() !== 10) throw new Error('tamanio');
-  // El mas reciente queda en la cima
   console.assert(p.cima() === 11, 'cima 11');
   if (p.cima() !== 11) throw new Error('cima');
 });
 
-// ===== COLA =====
 prueba('Cola inicia vacia', () => {
   const c = new Cola();
   console.assert(c.estaVacia() === true, 'vacia');
@@ -77,18 +74,17 @@ prueba('Cola vacia desencolar retorna null', () => {
   if (c.desencolar() !== null) throw new Error('no null');
 });
 
-prueba('Cola aArray orden correcto', () => {
+prueba('Cola aArreglo orden correcto', () => {
   const c = new Cola();
   c.encolar(1);
   c.encolar(2);
   c.encolar(3);
-  const arr = c.aArray();
+  const arr = c.aArreglo();
   console.assert(arr.length === 3, 'len');
   console.assert(arr[0] === 1 && arr[1] === 2 && arr[2] === 3, 'orden');
   if (!(arr[0] === 1 && arr[1] === 2 && arr[2] === 3)) throw new Error('orden');
 });
 
-// ===== TABLA HASH =====
 prueba('TablaHash poner/obtener/existe', () => {
   const t = new TablaHash();
   t.poner('email1@test.com', { id: 1 });
@@ -119,7 +115,6 @@ prueba('TablaHash eliminar y reutilizar clave', () => {
 });
 
 prueba('TablaHash colisiones (encadenamiento)', () => {
-  // Fuerza colisiones usando tamano 1
   const t = new TablaHash(1);
   t.poner('a', 1);
   t.poner('b', 2);

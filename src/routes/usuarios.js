@@ -2,23 +2,20 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { read, write, nextId } = require('../store');
+const { leer, escribir, siguienteId } = require('../store');
 const { verificarToken } = require('../middleware/autenticacion');
 const TablaHash = require('../estructuras/TablaHash');
 
-const FILE = 'usuarios.json';
+const ARCHIVO = 'usuarios.json';
 
-// Indice de usuarios por email (TablaHash), cargado al iniciar el servidor.
-const usuarios = read(FILE);
+const usuarios = leer(ARCHIVO);
 const tablaUsuarios = new TablaHash();
 usuarios.forEach(u => tablaUsuarios.poner(u.email, u));
 
-// POST /api/usuarios/register - registrar un usuario nuevo
 router.post('/register', async (req, res) => {
   const { nombre, email, password } = req.body;
 
   try {
-    // Rechazar emails duplicados usando la tabla hash
     if (tablaUsuarios.existe(email)) {
       return res.status(400).json({ error: 'Email already registered' });
     }
@@ -26,7 +23,7 @@ router.post('/register', async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 10);
 
     const nuevoUsuario = {
-      id: nextId(usuarios),
+      id: siguienteId(usuarios),
       nombre,
       email,
       password_hash: passwordHash,
@@ -34,7 +31,7 @@ router.post('/register', async (req, res) => {
     };
 
     usuarios.push(nuevoUsuario);
-    write(FILE, usuarios);
+    escribir(ARCHIVO, usuarios);
     tablaUsuarios.poner(email, nuevoUsuario);
 
     res.status(201).json({
@@ -51,12 +48,10 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// POST /api/usuarios/login - iniciar sesión
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Buscar el usuario por email usando la tabla hash
     const usuario = tablaUsuarios.obtener(email);
 
     if (!usuario) {
@@ -89,7 +84,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// GET /api/usuarios/:id - obtener un usuario por id
 router.get('/:id', (req, res) => {
   try {
     const usuario = usuarios.find(u => String(u.id) === String(req.params.id));
@@ -107,7 +101,6 @@ router.get('/:id', (req, res) => {
   }
 });
 
-// GET /api/usuarios/perfil/me - obtener los datos del usuario autenticado
 router.get('/perfil/me', verificarToken, (req, res) => {
   try {
     const usuario = usuarios.find(u => String(u.id) === String(req.usuario.id));

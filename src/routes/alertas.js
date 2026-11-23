@@ -1,16 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { read, write, nextId } = require('../store');
+const { leer, escribir, siguienteId } = require('../store');
 const { verificarToken } = require('../middleware/autenticacion');
 const Pila = require('../estructuras/Pila');
 const Cola = require('../estructuras/Cola');
 
-const FILE = 'alertas.json';
-const LIMIT = 10;
+const ARCHIVO = 'alertas.json';
+const LIMITE = 10;
 
-// Pila de alertas borradas para "Undo delete" (limite 10).
 const pilaEliminadas = new Pila(10);
-// Cola de alertas pendientes de revision por el admin (no persistente).
 const colaPendientes = new Cola();
 
 function haversineKm(lat1, lng1, lat2, lng2) {
@@ -26,22 +24,21 @@ function haversineKm(lat1, lng1, lat2, lng2) {
   return R * c;
 }
 
-// GET /api/alertas - listado paginado
 router.get('/', (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const alertas = read(FILE);
+    const alertas = leer(ARCHIVO);
     const ordenadas = [...alertas].sort((a, b) => (b.id || 0) - (a.id || 0));
     const total = ordenadas.length;
-    const pages = Math.ceil(total / LIMIT) || 1;
-    const offset = (page - 1) * LIMIT;
-    const data = ordenadas.slice(offset, offset + LIMIT);
+    const pages = Math.ceil(total / LIMITE) || 1;
+    const offset = (page - 1) * LIMITE;
+    const data = ordenadas.slice(offset, offset + LIMITE);
 
     res.json({
       data,
       pagination: {
         page,
-        limit: LIMIT,
+        limit: LIMITE,
         total,
         pages
       }
@@ -51,7 +48,6 @@ router.get('/', (req, res) => {
   }
 });
 
-// GET /api/alertas/filtro - filtrar por tipo y radio (Haversine)
 router.get('/filtro', (req, res) => {
   try {
     const { tipo, radio, lat, lng } = req.query;
@@ -72,7 +68,7 @@ router.get('/filtro', (req, res) => {
       });
     }
 
-    const alertas = read(FILE);
+    const alertas = leer(ARCHIVO);
     const resultado = alertas.filter(a => {
       if (a.tipo !== tipo) return false;
       const dist = haversineKm(latNum, lngNum, parseFloat(a.latitud), parseFloat(a.longitud));
@@ -86,10 +82,9 @@ router.get('/filtro', (req, res) => {
   }
 });
 
-// GET /api/alertas/stats - estadísticas
 router.get('/stats', (req, res) => {
   try {
-    const alertas = read(FILE);
+    const alertas = leer(ARCHIVO);
     const totalAlertas = alertas.length;
     const alertasActivas = alertas.filter(a => a.estado === 'activa').length;
     const alertasResueltas = alertas.filter(a => a.estado === 'resuelta').length;
@@ -111,18 +106,16 @@ router.get('/stats', (req, res) => {
   }
 });
 
-// GET /api/alertas/pendientes - cola de revision (solo admin)
 router.get('/pendientes', verificarToken, (req, res) => {
   if (req.usuario.rol !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   res.json({
-    data: colaPendientes.aArray(),
+    data: colaPendientes.aArreglo(),
     total: colaPendientes.tamanio()
   });
 });
 
-// POST /api/alertas/pendientes/siguiente - revisar siguiente (solo admin)
 router.post('/pendientes/siguiente', verificarToken, (req, res) => {
   if (req.usuario.rol !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
@@ -134,13 +127,11 @@ router.post('/pendientes/siguiente', verificarToken, (req, res) => {
   res.json(alerta);
 });
 
-// POST /api/alertas/deshacer - restaurar ultima alerta borrada
 router.post('/deshacer', verificarToken, (req, res) => {
   const elemento = pilaEliminadas.cima();
   if (!elemento) {
     return res.status(404).json({ error: 'Nothing to undo' });
   }
-  // Verificar permisos: admin o quien la borro
   if (elemento.borradoPor !== req.usuario.id && req.usuario.rol !== 'admin') {
     return res.status(403).json({ error: 'You do not have permission to undo this deletion' });
   }
@@ -148,20 +139,18 @@ router.post('/deshacer', verificarToken, (req, res) => {
   const restaurada = pilaEliminadas.desapilar();
   const alerta = restaurada.alerta;
 
-  const alertas = read(FILE);
-  // Evitar duplicados si ya existe
+  const alertas = leer(ARCHIVO);
   if (!alertas.find(a => String(a.id) === String(alerta.id))) {
     alertas.push(alerta);
-    write(FILE, alertas);
+    escribir(ARCHIVO, alertas);
   }
 
   res.json(alerta);
 });
 
-// GET /api/alertas/:id - obtener una alerta por id
 router.get('/:id', (req, res) => {
   try {
-    const alertas = read(FILE);
+    const alertas = leer(ARCHIVO);
     const alerta = alertas.find(a => String(a.id) === String(req.params.id));
     if (!alerta) {
       return res.status(404).json({ error: 'Alert not found' });
@@ -172,15 +161,14 @@ router.get('/:id', (req, res) => {
   }
 });
 
-// POST /api/alertas - crear alerta (requiere token)
 router.post('/', verificarToken, (req, res) => {
   const { titulo, descripcion, tipo, latitud, longitud, categoria_id } = req.body;
   const usuario_id = req.usuario.id;
 
   try {
-    const alertas = read(FILE);
+    const alertas = leer(ARCHIVO);
     const nueva = {
-      id: nextId(alertas),
+      id: siguienteId(alertas),
       titulo,
       descripcion,
       tipo,
@@ -192,9 +180,8 @@ router.post('/', verificarToken, (req, res) => {
       fecha_creacion: new Date().toISOString()
     };
     alertas.push(nueva);
-    write(FILE, alertas);
+    escribir(ARCHIVO, alertas);
 
-    // Encolar en la cola de revision
     colaPendientes.encolar(nueva);
 
     res.status(201).json(nueva);
@@ -203,7 +190,6 @@ router.post('/', verificarToken, (req, res) => {
   }
 });
 
-// PUT /api/alertas/:id - actualizar estado (solo admin)
 router.put('/:id', verificarToken, (req, res) => {
   const { estado } = req.body;
   const { id } = req.params;
@@ -217,27 +203,26 @@ router.put('/:id', verificarToken, (req, res) => {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
-    const alertas = read(FILE);
+    const alertas = leer(ARCHIVO);
     const idx = alertas.findIndex(a => String(a.id) === String(id));
     if (idx === -1) {
       return res.status(404).json({ error: 'Alert not found' });
     }
 
     alertas[idx].estado = estado;
-    write(FILE, alertas);
+    escribir(ARCHIVO, alertas);
     res.json(alertas[idx]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// DELETE /api/alertas/:id - eliminar (dueño o admin)
 router.delete('/:id', verificarToken, (req, res) => {
   const { id } = req.params;
   const usuario_id = req.usuario.id;
 
   try {
-    const alertas = read(FILE);
+    const alertas = leer(ARCHIVO);
     const alerta = alertas.find(a => String(a.id) === String(id));
     if (!alerta) {
       return res.status(404).json({ error: 'Alert not found' });
@@ -247,11 +232,10 @@ router.delete('/:id', verificarToken, (req, res) => {
       return res.status(403).json({ error: "You don't have permission to delete this alert" });
     }
 
-    // Apilar la alerta completa antes de borrar (guarda quien la borro)
     pilaEliminadas.apilar({ alerta, borradoPor: usuario_id });
 
     const nuevas = alertas.filter(a => String(a.id) !== String(id));
-    write(FILE, nuevas);
+    escribir(ARCHIVO, nuevas);
     res.json({ message: 'Alert deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });

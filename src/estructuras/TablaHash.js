@@ -13,8 +13,7 @@ class TablaHash {
     this.cantidad = 0;
   }
 
-  // Funcion hash propia: suma de codigos de caracteres modulo el tamano.
-  hash(clave) {
+  calcularIndice(clave) {
     let suma = 0;
     const texto = String(clave);
     for (let i = 0; i < texto.length; i++) {
@@ -23,9 +22,8 @@ class TablaHash {
     return suma % this.tamano;
   }
 
-  // Inserta o actualiza un par clave/valor.
   poner(clave, valor) {
-    const indice = this.hash(clave);
+    const indice = this.calcularIndice(clave);
     const cubeta = this.cubetas[indice];
     for (let i = 0; i < cubeta.length; i++) {
       if (cubeta[i].clave === clave) {
@@ -37,9 +35,8 @@ class TablaHash {
     this.cantidad++;
   }
 
-  // Devuelve el valor asociado a la clave o null si no existe.
   obtener(clave) {
-    const indice = this.hash(clave);
+    const indice = this.calcularIndice(clave);
     const cubeta = this.cubetas[indice];
     for (let i = 0; i < cubeta.length; i++) {
       if (cubeta[i].clave === clave) {
@@ -49,9 +46,8 @@ class TablaHash {
     return null;
   }
 
-  // Elimina la clave y devuelve true si existia.
   eliminar(clave) {
-    const indice = this.hash(clave);
+    const indice = this.calcularIndice(clave);
     const cubeta = this.cubetas[indice];
     for (let i = 0; i < cubeta.length; i++) {
       if (cubeta[i].clave === clave) {
@@ -63,12 +59,10 @@ class TablaHash {
     return false;
   }
 
-  // Indica si la clave existe.
   existe(clave) {
     return this.obtener(clave) !== null;
   }
 
-  // Cantidad de pares almacenados.
   tamanio() {
     return this.cantidad;
   }

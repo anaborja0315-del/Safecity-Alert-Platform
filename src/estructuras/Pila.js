@@ -17,10 +17,8 @@ class Pila {
     this.limite = limite;
   }
 
-  // Apila un elemento; si se llena, descarta el mas antiguo (el del fondo).
   apilar(x) {
     if (this.limite > 0 && this.tam >= this.limite) {
-      // Descartar el nodo mas antiguo (fondo de la pila).
       if (this.tam === 1) {
         this.tope = null;
       } else {
@@ -39,7 +37,6 @@ class Pila {
     this.tam++;
   }
 
-  // Desapila y devuelve el elemento del tope (o null si esta vacia).
   desapilar() {
     if (this.estaVacia()) {
       return null;
@@ -50,7 +47,6 @@ class Pila {
     return valor;
   }
 
-  // Devuelve el elemento del tope sin desapilarlo (o null si esta vacia).
   cima() {
     if (this.estaVacia()) {
       return null;

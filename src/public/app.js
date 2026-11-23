@@ -1,9 +1,7 @@
-// ===== CONFIGURACIÓN =====
 const API_URL = 'http://localhost:3000/api';
 const CARTAGENA_COORDS = [10.4236, -75.5378];
 const DEFAULT_ZOOM = 13;
 
-// ===== ESTADO GLOBAL =====
 let map;
 let markers = [];
 let selectedCoords = null;
@@ -14,18 +12,14 @@ let currentPage = 1;
 let totalPages = 1;
 let currentUser = JSON.parse(localStorage.getItem('safecity_user') || 'null');
 
-// ===== INICIALIZAR EL MAPA =====
 function initMap() {
-  // Crear el mapa centrado en Cartagena
   map = L.map('map').setView(CARTAGENA_COORDS, DEFAULT_ZOOM);
 
-  // Agregar la capa de OpenStreetMap (las imágenes del mapa)
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
     maxZoom: 19
   }).addTo(map);
 
-  // Permitir al usuario hacer clic en el mapa para seleccionar ubicación
   map.on('click', (e) => {
     if (!token) {
       showNotification('Please login to report alerts', 'error');
@@ -36,7 +30,6 @@ function initMap() {
   });
 }
 
-// ===== UBICACIÓN SELECCIONADA EN EL MAPA =====
 function clearSelectedLocation() {
   if (selectedMarker) {
     map.removeLayer(selectedMarker);
@@ -80,7 +73,6 @@ function showSelectedLocation(lat, lng) {
   selectedLocationTimer = setTimeout(clearSelectedLocation, 30000);
 }
 
-// ===== CARGAR ALERTAS DESDE LA API =====
 async function loadAlerts(page = 1) {
   try {
     const response = await fetch(`${API_URL}/alertas?page=${page}`);
@@ -89,7 +81,6 @@ async function loadAlerts(page = 1) {
     totalPages = data.pagination.pages;
     currentPage = data.pagination.page;
 
-    // Limpiar marcadores anteriores
     markers.forEach(m => map.removeLayer(m));
     markers = [];
 
@@ -124,7 +115,6 @@ function updatePaginationUI() {
   if (nextBtn) nextBtn.disabled = currentPage === totalPages;
 }
 
-// ===== CREAR CONTENIDO DEL POPUP =====
 function createPopupContent(alert) {
   const esAdmin = currentUser?.rol === 'admin';
   const esDueño = currentUser?.id === alert.usuario_id;
@@ -140,7 +130,6 @@ function createPopupContent(alert) {
     `;
   }
 
-  // ===== SELECTOR DE ESTADO - SOLO PARA ADMIN =====
   let statusSection = '';
   if (token && esAdmin) {
     statusSection = `
@@ -148,8 +137,8 @@ function createPopupContent(alert) {
         <label style="font-weight: 600; font-size: 0.9rem;">Change Status (Admin only):</label>
         <select id="status-select-${alert.id}"
                 style="width: 100%; padding: 6px; margin: 6px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem;">
-          <option value="activa" ${alert.estado === 'activa' ? 'selected' : ''}>Activa</option>
-          <option value="resuelta" ${alert.estado === 'resuelta' ? 'selected' : ''}>Resuelta</option>
+          <option value="active" ${alert.estado === 'active' ? 'selected' : ''}>Active</option>
+          <option value="resolved" ${alert.estado === 'resolved' ? 'selected' : ''}>Resolved</option>
         </select>
         <button class="status-btn" data-alert-id="${alert.id}"
                 style="width: 100%; background: #27AE60; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
@@ -164,14 +153,14 @@ function createPopupContent(alert) {
     <p>${alert.descripcion || 'No description'}</p>
     <span class="popup-tag">${alert.tipo}</span>
     <p style="margin-top: 8px; font-size: 0.8rem; color: #7F8C8D;">
-      Status: <strong>${alert.estado || 'active'}</strong>
+      Status: <strong>${alert.estado || 'active'}</strong><br>
+      Created: <strong>${alert.fecha_creacion ? new Date(alert.fecha_creacion).toLocaleString() : '-'}</strong>
     </p>
     ${statusSection}
     ${deleteButton}
   `;
 }
 
-// ===== DELEGACIÓN DE EVENTOS (nivel de documento) =====
 document.addEventListener('click', async (e) => {
   const deleteBtn = e.target.closest('.delete-btn');
   if (deleteBtn) {
@@ -232,7 +221,6 @@ document.addEventListener('click', async (e) => {
   }
 });
 
-// ===== FUNCIONES DE AUTENTICACIÓN =====
 
 async function register(name, email, password) {
   try {
@@ -293,7 +281,6 @@ function logout() {
   showNotification('Logged out successfully');
 }
 
-// ===== ACTUALIZAR INTERFAZ =====
 
 function updateUIAfterLogin() {
   document.getElementById('loginBtn').style.display = 'none';
@@ -334,7 +321,6 @@ function updateUIAfterLogout() {
   if (reviewNav) reviewNav.style.display = 'none';
 }
 
-// ===== ENVIAR NUEVA ALERTA =====
 async function submitAlert(e) {
   e.preventDefault();
 
@@ -386,7 +372,6 @@ async function submitAlert(e) {
   }
 }
 
-// ===== HELPERS DE MODAL =====
 
 function openModal(id) {
   document.getElementById(id).classList.add('active');
@@ -396,7 +381,6 @@ function closeModal(id) {
   document.getElementById(id).classList.remove('active');
 }
 
-// ===== NOTIFICACIONES EN PANTALLA =====
 function showNotification(message, type = 'success') {
   const notification = document.getElementById('notification');
   notification.textContent = message;
@@ -407,7 +391,6 @@ function showNotification(message, type = 'success') {
   }, 3000);
 }
 
-// ===== CARGAR ESTADÍSTICAS =====
 async function loadStats() {
   try {
     const response = await fetch(`${API_URL}/alertas/stats`);
@@ -421,7 +404,6 @@ async function loadStats() {
   }
 }
 
-// ===== CARGAR ALERTAS DEL USUARIO =====
 async function loadUserAlerts() {
   try {
     const response = await fetch(`${API_URL}/alertas`);
@@ -449,7 +431,6 @@ async function loadUserAlerts() {
   }
 }
 
-// ===== CARGAR INFO DE CUENTA =====
 function loadAccountInfo() {
   if (currentUser) {
     document.getElementById('userEmail').textContent = currentUser.email || '-';
@@ -458,7 +439,6 @@ function loadAccountInfo() {
   }
 }
 
-// ===== UNDO DELETE =====
 async function undoDelete() {
   if (!token) {
     showNotification('Please login first', 'error');
@@ -483,7 +463,6 @@ async function undoDelete() {
   }
 }
 
-// ===== COLA DE REVISION (ADMIN) =====
 async function loadPendingCount() {
   if (!token || currentUser?.rol !== 'admin') return;
   try {
@@ -514,7 +493,7 @@ async function reviewNext() {
       showNotification('Alert reviewed successfully!');
       const info = document.getElementById('reviewedAlert');
       if (info) {
-        info.innerHTML = `<strong>${data.titulo}</strong><p>${data.descripcion || ''}</p>`;
+        info.innerHTML = `<strong>${data.titulo}</strong><p>${data.descripcion || ''}</p><p style="font-size:0.8rem;color:#7F8C8D;">Status: ${data.estado || 'active'} | Created: ${data.fecha_creacion ? new Date(data.fecha_creacion).toLocaleString() : '-'}</p>`;
       }
       loadPendingCount();
     } else {
@@ -526,7 +505,6 @@ async function reviewNext() {
   }
 }
 
-// ===== EVENT LISTENERS (cuando el DOM esté listo) =====
 document.addEventListener('DOMContentLoaded', () => {
   initMap();
   loadAlerts();
@@ -536,7 +514,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUIAfterLogin();
   }
 
-  // Botón de geolocalización
   document.getElementById('myLocationBtn').addEventListener('click', () => {
   navigator.geolocation.getCurrentPosition((position) => {
     const lat = position.coords.latitude;
@@ -551,7 +528,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-  // Botones de autenticación
   document.getElementById('loginBtn').addEventListener('click', () => openModal('loginModal'));
   document.getElementById('registerBtn').addEventListener('click', () => openModal('registerModal'));
   document.getElementById('logoutBtn').addEventListener('click', logout);
@@ -560,14 +536,12 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutBtnHeader.addEventListener('click', logout);
   }
 
-  // Botones de cerrar modal
   document.querySelectorAll('.close').forEach(btn => {
     btn.addEventListener('click', () => {
       closeModal(btn.dataset.modal);
     });
   });
 
-  // Formulario de login
   document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value;
@@ -575,7 +549,6 @@ document.addEventListener('DOMContentLoaded', () => {
     login(email, password);
   });
 
-  // Formulario de registro
   document.getElementById('registerForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.getElementById('registerName').value;
@@ -584,28 +557,23 @@ document.addEventListener('DOMContentLoaded', () => {
     register(name, email, password);
   });
 
-  // Formulario para crear alerta
   document.getElementById('alertForm').addEventListener('submit', submitAlert);
 
-  // Botón para limpiar ubicación seleccionada
   const clearLocationBtn = document.getElementById('clearLocationBtn');
   if (clearLocationBtn) {
     clearLocationBtn.addEventListener('click', clearSelectedLocation);
   }
 
-  // Botón Undo delete
   const undoDeleteBtn = document.getElementById('undoDeleteBtn');
   if (undoDeleteBtn) {
     undoDeleteBtn.addEventListener('click', undoDelete);
   }
 
-  // Botón Review next
   const reviewNextBtn = document.getElementById('reviewNextBtn');
   if (reviewNextBtn) {
     reviewNextBtn.addEventListener('click', reviewNext);
   }
 
-  // Toggle sidebar
   const toggleSidebar = document.getElementById('toggleSidebar');
   if (toggleSidebar) {
     toggleSidebar.addEventListener('click', () => {
@@ -614,7 +582,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Navegación de secciones
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const sectionId = btn.dataset.section;
@@ -640,7 +607,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Paginación
   const prevBtn = document.getElementById('prevBtn');
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {

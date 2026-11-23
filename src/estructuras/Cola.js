@@ -1,6 +1,6 @@
 // Cola (queue) implementada con nodos enlazados y referencias a frente y final.
 // Complejidades: encolar O(1), desencolar O(1), frente O(1), estaVacia O(1),
-// tamanio O(1), aArray O(n).
+// tamanio O(1), aArreglo O(n).
 // Se usa en SafeCity para la cola de revision de alertas nuevas (src/routes/alertas.js).
 
 class NodoCola {
@@ -17,7 +17,6 @@ class Cola {
     this.tam = 0;
   }
 
-  // Encola un elemento al final.
   encolar(x) {
     const nodo = new NodoCola(x);
     if (this.finalNodo === null) {
@@ -30,7 +29,6 @@ class Cola {
     this.tam++;
   }
 
-  // Desencola y devuelve el elemento del frente (o null si esta vacia).
   desencolar() {
     if (this.estaVacia()) {
       return null;
@@ -44,7 +42,6 @@ class Cola {
     return valor;
   }
 
-  // Devuelve el elemento del frente sin desencolarlo (o null si esta vacia).
   frente() {
     if (this.estaVacia()) {
       return null;
@@ -60,8 +57,7 @@ class Cola {
     return this.tam;
   }
 
-  // Devuelve un array con los elementos en orden de la cola.
-  aArray() {
+  aArreglo() {
     const resultado = [];
     let actual = this.frenteNodo;
     while (actual !== null) {

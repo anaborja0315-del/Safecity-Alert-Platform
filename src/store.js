@@ -3,14 +3,14 @@ const path = require('path');
 
 const DATA_DIR = path.join(__dirname, 'data');
 
-function ensureDir() {
+function asegurarDir() {
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
 }
 
-function read(file) {
-  ensureDir();
+function leer(file) {
+  asegurarDir();
   const filePath = path.join(DATA_DIR, file);
   if (!fs.existsSync(filePath)) {
     return [];
@@ -24,13 +24,13 @@ function read(file) {
   }
 }
 
-function write(file, data) {
-  ensureDir();
+function escribir(file, data) {
+  asegurarDir();
   const filePath = path.join(DATA_DIR, file);
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
 }
 
-function nextId(list) {
+function siguienteId(list) {
   if (!Array.isArray(list) || list.length === 0) {
     return 1;
   }
@@ -41,4 +41,4 @@ function nextId(list) {
   return max + 1;
 }
 
-module.exports = { read, write, nextId };
+module.exports = { leer, escribir, siguienteId };

@@ -24,129 +24,202 @@
         </span>
         <button id="loginBtn" class="btn btn-primary">Login</button>
         <button id="registerBtn" class="btn btn-secondary">Register</button>
-        <button id="logoutBtnHeader" class="btn btn-danger" style="display: none;">Logout</button>
+        <button
+          id="logoutBtnHeader"
+          class="btn btn-danger"
+          style="display: none"
+        >
+          Logout
+        </button>
       </nav>
     </header>
 
     <main class="main">
-
-<button id="toggleSidebar" class="toggle-btn" title="Open/Close Menu">
-  ☰
-</button>
-<aside id="sidebar" class="sidebar closed">
-  
-  <div class="sidebar-nav">
-    <button class="nav-btn active" data-section="new-alert">
-      ➕ New Alert
-    </button>
-    <button class="nav-btn" data-section="view-alerts">
-      📋 My Alerts
-    </button>
-    
-    <button class="nav-btn" data-section="account">
-      👤 Account
-    </button>
-    <button class="nav-btn" data-section="review-queue" id="reviewQueueNavBtn" style="display:none;">
-      📋 Review Queue
-    </button>
-    <button class="nav-btn" data-section="statistics">
-      📊 Statistics
-    </button>
-  </div>
-
-  <div style="padding: 0 12px 12px;">
-    <button id="undoDeleteBtn" type="button"
-      style="display:none; background: #E67E22; color: white; width: 100%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
-      ↩ Undo delete
-    </button>
-  </div>
-
-  <section id="new-alert" class="sidebar-section active">
-    <h2>Report Alert</h2>
-    <p class="info-text">Click on the map to set location</p>
-
-    <form id="alertForm" class="alert-form">
-      <input type="text" id="title" placeholder="Alert title" required />
-      <textarea
-        id="description"
-        placeholder="Describe the issue..."
-        rows="3"
-        required
-      ></textarea>
-
-      <select id="categoryId" required>
-        <option value="">Select risk type</option>
-        <option value="1">🕳️ Pothole</option>
-        <option value="2">🌊 Flooding</option>
-        <option value="3">⚡ Electric Risk</option>
-        <option value="4">🚨 Insecurity</option>
-        <option value="5">🚗 Accident</option>
-      </select>
-
-      <input
-        type="text"
-        id="coords"
-        placeholder="Coordinates (click on map)"
-        readonly
-      />
-      <button type="button" id="clearLocationBtn"
-        style="background: #95A5A6; color: white; width: 100%; padding: 8px; border: none; border-radius: 4px; cursor: pointer; margin-top: 8px; font-weight: 600;">
-        Clear location
+      <button id="toggleSidebar" class="toggle-btn" title="Open/Close Menu">
+        ☰
       </button>
-      
-    <button 
-    type="button" 
-    id="myLocationBtn"
-    style="background: #27AE60; color: white; width: 100%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; margin-top: 8px; font-weight: 600;">
-    📍 My Location
-    </button>
+      <aside id="sidebar" class="sidebar closed">
+        <div class="sidebar-nav">
+          <button class="nav-btn active" data-section="new-alert">
+            ➕ New Alert
+          </button>
+          <button class="nav-btn" data-section="view-alerts">
+            📋 My Alerts
+          </button>
 
+          <button class="nav-btn" data-section="account">👤 Account</button>
+          <button
+            class="nav-btn"
+            data-section="review-queue"
+            id="reviewQueueNavBtn"
+            style="display: none"
+          >
+            📋 Review Queue
+          </button>
+          <button class="nav-btn" data-section="statistics">
+            📊 Statistics
+          </button>
+        </div>
 
-      <button type="submit" class="btn btn-success">Submit Alert</button>
-    </form>
-  </section>
+        <div style="padding: 0 12px 12px">
+          <button
+            id="undoDeleteBtn"
+            type="button"
+            style="
+              display: none;
+              background: #e67e22;
+              color: white;
+              width: 100%;
+              padding: 10px;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              font-weight: 600;
+            "
+          >
+            ↩ Undo delete
+          </button>
+        </div>
 
-  <section id="view-alerts" class="sidebar-section">
-    <h2>My Alerts</h2>
-    <div id="userAlertsList" class="alerts-list">
-      <p style="text-align: center; color: #7F8C8D;">No alerts yet</p>
-    </div>
-  </section>
+        <section id="new-alert" class="sidebar-section active">
+          <h2>Report Alert</h2>
+          <p class="info-text">Click on the map to set location</p>
 
-  <section id="statistics" class="sidebar-section">
-    <h2>📊 Statistics</h2>
-    <div class="stats">
-      <p>Total Alerts: <strong id="totalAlerts">0</strong></p>
-      <p>Active: <strong id="activeAlerts">0</strong></p>
-      <p>Resolved: <strong id="resolvedAlerts">0</strong></p>
-    </div>
-  </section>
+          <form id="alertForm" class="alert-form">
+            <input type="text" id="title" placeholder="Alert title" required />
+            <textarea
+              id="description"
+              placeholder="Describe the issue..."
+              rows="3"
+              required
+            ></textarea>
 
-  <section id="review-queue" class="sidebar-section" style="display:none;">
-    <h2>📋 Review Queue</h2>
-    <p>Pending: <strong id="pendingCount">0</strong></p>
-    <button id="reviewNextBtn" type="button"
-      style="background: #2980B9; color: white; width: 100%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; margin-top: 8px; font-weight: 600;">
-      Review next
-    </button>
-    <div id="reviewedAlert" style="margin-top: 10px;"></div>
-  </section>
+            <select id="categoryId" required>
+              <option value="">Select risk type</option>
+              <option value="1">🕳️ Pothole</option>
+              <option value="2">🌊 Flooding</option>
+              <option value="3">⚡ Electric Risk</option>
+              <option value="4">🚨 Insecurity</option>
+              <option value="5">🚗 Accident</option>
+            </select>
 
- 
+            <input
+              type="text"
+              id="coords"
+              placeholder="Coordinates (click on map)"
+              readonly
+            />
+            <button
+              type="button"
+              id="clearLocationBtn"
+              style="
+                background: #95a5a6;
+                color: white;
+                width: 100%;
+                padding: 8px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                margin-top: 8px;
+                font-weight: 600;
+              "
+            >
+              Clear location
+            </button>
 
-<section id="account" class="sidebar-section">
-  <h2>👤 Account</h2>
-  <div id="accountInfo" style="padding: 16px; background: #f8f9fa; border-radius: 6px;">
-    <p><strong>Email:</strong> <span id="userEmail">-</span></p>
-    <p><strong>Name:</strong> <span id="userName">-</span></p>
-    <p><strong>Role:</strong> <span id="userRole">-</span></p>
-    <button id="logoutBtn" style="background: #E74C3C; color: white; padding: 10px 16px; border: none; border-radius: 4px; cursor: pointer; margin-top: 16px; width: 100%; font-weight: 600;">
-      🚪 Logout
-    </button>
-  </div>
-</section>
+            <button
+              type="button"
+              id="myLocationBtn"
+              style="
+                background: #27ae60;
+                color: white;
+                width: 100%;
+                padding: 10px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                margin-top: 8px;
+                font-weight: 600;
+              "
+            >
+              📍 My Location
+            </button>
 
-</aside>
+            <button type="submit" class="btn btn-success">Submit Alert</button>
+          </form>
+        </section>
+
+        <section id="view-alerts" class="sidebar-section">
+          <h2>My Alerts</h2>
+          <div id="userAlertsList" class="alerts-list">
+            <p style="text-align: center; color: #7f8c8d">No alerts yet</p>
+          </div>
+        </section>
+
+        <section id="statistics" class="sidebar-section">
+          <h2>📊 Statistics</h2>
+          <div class="stats">
+            <p>Total Alerts: <strong id="totalAlerts">0</strong></p>
+            <p>Active: <strong id="activeAlerts">0</strong></p>
+            <p>Resolved: <strong id="resolvedAlerts">0</strong></p>
+          </div>
+        </section>
+
+        <section
+          id="review-queue"
+          class="sidebar-section"
+          style="display: none"
+        >
+          <h2>📋 Review Queue</h2>
+          <p>Pending: <strong id="pendingCount">0</strong></p>
+          <button
+            id="reviewNextBtn"
+            type="button"
+            style="
+              background: #2980b9;
+              color: white;
+              width: 100%;
+              padding: 10px;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              margin-top: 8px;
+              font-weight: 600;
+            "
+          >
+            Review next
+          </button>
+          <div id="reviewedAlert" style="margin-top: 10px"></div>
+        </section>
+
+        <section id="account" class="sidebar-section">
+          <h2>👤 Account</h2>
+          <div
+            id="accountInfo"
+            style="padding: 16px; background: #f8f9fa; border-radius: 6px"
+          >
+            <p><strong>Email:</strong> <span id="userEmail">-</span></p>
+            <p><strong>Name:</strong> <span id="userName">-</span></p>
+            <p><strong>Role:</strong> <span id="userRole">-</span></p>
+            <button
+              id="logoutBtn"
+              style="
+                background: #e74c3c;
+                color: white;
+                padding: 10px 16px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                margin-top: 16px;
+                width: 100%;
+                font-weight: 600;
+              "
+            >
+              🚪 Logout
+            </button>
+          </div>
+        </section>
+      </aside>
 
       <div id="map" class="map">
         <div id="pagination">
@@ -155,12 +228,9 @@
           <button id="nextBtn">Next</button>
         </div>
       </div>
-
-
-      
     </main>
 
-    <!-- Login Modal -->
+    
     <div id="loginModal" class="modal">
       <div class="modal-content">
         <span class="close" data-modal="loginModal">&times;</span>
@@ -205,7 +275,8 @@
     <div id="notification" class="notification"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <!-- Custom JS -->
+    
     <script src="app.js"></script>
   </body>
 </html>
+
